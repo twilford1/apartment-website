@@ -1,7 +1,7 @@
 <?php
 	//Database Information
 	$db_host = "localhost"; //Host address (most likely localhost)
-	$db_name = "website"; //Name of Database
+	$db_name = "website_test"; //Name of Database
 	$db_user = "websiteUser"; //Name of database user
 	$db_pass = "4WPXGzCUm2y2TeG7"; //Password for database user
 	$db_table_prefix = "apt_";
