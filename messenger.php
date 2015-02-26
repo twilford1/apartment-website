@@ -6,6 +6,10 @@
 		die();
 	}
 	
+	
+	
+	$messages = fetchInbox($loggedInUser->user_id);
+	
 	require_once("models/header.php");
 
 	
@@ -69,25 +73,26 @@
 									<td class='col-sm-1'></td>
 								</tr>
 							</thead>
-							<tbody>
-								<tr>
-									<td class='col-sm-3 col-xs-4'><span>2014-09-02 09:16</span></td>
-									<td class='col-sm-2 col-xs-4'><span>+17273314889</span></td>
-									<td class='col-sm-4 col-xs-6'><span>Hello Master Admin</span></td>
-									<td class='col-sm-1 col-sm-2'></td>
-								</tr>
-								<tr>
-									<td class='col-sm-3 col-xs-4'><span>2014-09-02 09:17</span></td>
-									<td class='col-sm-2 col-xs-4'><span>+17273314889</span></td>
-									<td class='col-sm-4 col-xs-6'><span>Good Morning Master Admin</span></td>
-									<td class='col-sm-1 col-sm-2'></td>
-								</tr>
-								<tr>
-									<td class='col-sm-3 col-xs-4'><span>2014-09-02 09:18</span></td>
-									<td class='col-sm-2 col-xs-4'><span>+17273314889</span></td>
-									<td class='col-sm-4 col-xs-6'><span>Afternoon, Master Admin</span></td>
-									<td class='col-sm-1 col-sm-2'></td>
-								</tr>
+							<tbody>";
+								
+								foreach ($messages as $m)
+								{
+									echo "
+									<tr>
+										<td class='col-sm-3 col-xs-4'>
+											<span>".date("Y-d-M H:m:s", $m['timestamp'])."</span>
+										</td>
+										<td class='col-sm-2 col-xs-4'>
+											<span>".fetchUsername($m['sender_id'])."</span>
+										</td>
+										<td class='col-sm-4 col-xs-6'>
+											<span>".$m['subject']."</span>
+										</td>
+										<td class='col-sm-1 col-sm-2'></td>
+									</tr>";
+								}
+								
+							echo "	
 							</tbody>
 						</table>
 					</div>

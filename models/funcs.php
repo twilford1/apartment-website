@@ -301,7 +301,7 @@
 	}
 
 	//Retrieve complete user information by username, token or ID
-	function fetchUserDetails($username=NULL,$token=NULL, $id=NULL)
+	function fetchUserDetails($username=NULL, $token=NULL, $id=NULL)
 	{
 		if($username!=NULL) {
 			$column = "user_name";
@@ -1314,6 +1314,50 @@
 		while ($stmt->fetch())
 		{
 			$row = array('landlord_id' => $landlord_id, 'name' => $name, 'address' => $address, 'email' => $email);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	//Return the username given the specified user ID
+	function fetchUsername($id = NULL)
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			user_name
+			FROM ".$db_table_prefix."users
+			WHERE id = ?
+			LIMIT 1");
+			$stmt->bind_param("i", $id);
+		$stmt->execute();
+		$stmt->bind_result($user);
+		$row = null;
+		while ($stmt->fetch())
+		{
+			$row = $user;
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	//Retrieve all messages for a user's inbox
+	function fetchInbox($user_id)
+	{
+		$user_id = 1;
+		error_log("id: ".$user_id);
+		global $mysqli, $db_table_prefix; 
+		// Select statement acting weird
+		$stmt = $mysqli->prepare("SELECT 
+			*
+			FROM ".$db_table_prefix."messages
+			WHERE recipient_id = ?
+			");
+			$stmt->bind_param("i", $user_id);
+		$stmt->execute();
+		$stmt->bind_result($id, $sender_id, $recipient_id, $subject, $message, $timestamp, $read);
+		while ($stmt->fetch())
+		{
+			$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'read' => $read);
 		}
 		$stmt->close();
 		return ($row);
