@@ -6,14 +6,29 @@
 		die();
 	}
 	
+	$unreadCount = unreadCount($loggedInUser->user_id);
 	
-	
-	$messages = fetchInbox($loggedInUser->user_id);
+	switch ($_GET['m'])
+	{
+		case "inbox":
+			$messages = fetchMessages($loggedInUser->user_id, "inbox"); //fetchInbox($loggedInUser->user_id);
+			$inboxActive = "class='active'";
+			break;
+		case "sent":
+			$messages = fetchMessages($loggedInUser->user_id, "sent"); //fetchSent($loggedInUser->user_id);
+			$sentActive = "class='active'";
+			break;
+		case "drafts":
+			$messages = fetchMessages($loggedInUser->user_id, "drafts"); //
+			$draftsActive = "class='active'";
+			break;
+		default:
+			$_GET['m'] = "inbox";
+			$messages = fetchMessages($loggedInUser->user_id, "inbox");
+			$inboxActive = "class='active'";
+	}
 	
 	require_once("models/header.php");
-
-	
-	//date("H:i:s", time())
 	
 	echo "
 	<div class='page-header'>
@@ -24,10 +39,9 @@
 		<div class='row'>
 			<aside class='col-md-2 pad-right-0'>
 				<ul class='nav nav-pills nav-stacked'>
-					<li class='active'><a href='#'><span class='badge pull-right'>27</span> Inbox </a></li>
-					<li><a href='#'> Sent </a></li>
-					<li><a href='#'><span class='badge pull-right'>1</span> Drafts </a></li>
-					<li><a href='#'> Deleted </a></li>
+					<li ".$inboxActive."><a href='messenger.php?m=inbox'><span class='badge pull-right'>".$unreadCount."</span> Inbox </a></li>
+					<li ".$sentActive."><a href='messenger.php?m=sent'> Sent </a></li>
+					<li ".$draftsActive."><a href='messenger.php?m=drafts'> Drafts </a></li>
 				</ul>
 			</aside>
 			
@@ -35,7 +49,7 @@
 				<!--inbox toolbar-->
 				<div class='row'>
 					<div class='col-xs-12'>
-						<a href='#' class='btn btn-default btn-lg'>
+						<a href='messenger.php?m=".$_GET['m']."' class='btn btn-default btn-lg'>
 							<span class='glyphicon glyphicon-refresh'></span>
 						</a>
 						<button class='btn btn-default btn-lg' title='Compose New' data-toggle='modal' data-target='#modalCompose'>
@@ -49,8 +63,8 @@
 							<ul class='dropdown-menu' role='menu'>
 								<li><a href='#'>Mark all as read</a></li>
 								<li class='divider'></li>
-								<li><a href='#' data-toggle='modal'>Compose new</a></li>
-								<li><a href='#' class='text-muted'>Settings</a></li>
+								<li><a href='#' data-toggle='modal' data-target='#modalCompose'>Compose new</a></li>
+								<li><a href='user_settings.php' class='text-muted'>Settings</a></li>
 							</ul>
 						</div>
 						
@@ -80,7 +94,7 @@
 									echo "
 									<tr>
 										<td class='col-sm-3 col-xs-4'>
-											<span>".date("Y-d-M H:m:s", $m['timestamp'])."</span>
+											<span>".date("M d, Y - g:i:s A", $m['timestamp'])."</span>
 										</td>
 										<td class='col-sm-2 col-xs-4'>
 											<span>".fetchUsername($m['sender_id'])."</span>
@@ -91,22 +105,36 @@
 										<td class='col-sm-1 col-sm-2'></td>
 									</tr>";
 								}
-								
+								if(!isset($messages))
+								{
+									echo "
+									<tr>
+										<td class='col-sm-3 col-xs-4'>
+											-
+										</td>
+										<td class='col-sm-2 col-xs-4'>
+											-
+										</td>
+										<td class='col-sm-4 col-xs-6'>
+											-
+										</td>
+										<td class='col-sm-1 col-sm-2'></td>
+									</tr>";
+								}
 							echo "	
 							</tbody>
 						</table>
 					</div>
 				</div>
 				<!--/inbox panel-->
-				
 				<div class='well well-s text-right'>
-					<em>Inbox last updated: <span>2014-09-02 09:16</span></em>
+					<em>Inbox last updated: <span>".date("M d, Y - g:i:s A", time())."</span></em>
 				</div>
 				
 				<!--paging-->
 				<div class='pull-right'>
 					<span class='text-muted'>
-						<b>1</b>-<b>1</b> of <b>1</b>
+						<b>1</b>-<b>1</b> of <b>".count($messages)."</b>
 					</span>
 					<div class='btn-group btn-group'>
 						<button type='button' class='btn btn-default btn-lg'>

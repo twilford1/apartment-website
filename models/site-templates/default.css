@@ -3688,6 +3688,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 }
 .nav-pills > li {
   float: left;
+  background-color: #f5f5f5;
 }
 .nav-pills > li > a {
   border-radius: 4px;

@@ -1339,14 +1339,63 @@
 		$stmt->close();
 		return ($row);
 	}
-	
-	//Retrieve all messages for a user's inbox
-	function fetchInbox($user_id)
+		
+	//Retrieve all the user's sent messages
+	function fetchMessages($user_id, $mailbox)
 	{
+		//TODO need to remove after testing and check out SQL statement
 		$user_id = 1;
-		error_log("id: ".$user_id);
+		
+		switch ($mailbox)
+		{
+			case "inbox":
+				$column = "recipient_id";
+				break;
+			case "sent":
+				$column = "sender_id";
+				break;
+			case "drafts":
+				$column = "sender_id";
+				break;
+			default:
+				return null;
+		}
+		
 		global $mysqli, $db_table_prefix; 
 		// Select statement acting weird
+		$stmt = $mysqli->prepare("SELECT 
+			*
+			FROM ".$db_table_prefix."messages
+			WHERE
+			$column = ?
+			");
+			$stmt->bind_param("i", $user_id);
+		$stmt->execute();
+		$stmt->bind_result($id, $sender_id, $recipient_id, $subject, $message, $timestamp, $read, $draft);
+		while ($stmt->fetch())
+		{
+			if($mailbox == "drafts")
+			{
+				if($draft == 1)
+				{
+					$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'read' => $read, 'draft' => $draft);
+				}
+			}
+			else
+			{
+				$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'read' => $read, 'draft' => $draft);
+			}
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	//Retrieve the unread count
+	function unreadCount($user_id)
+	{
+		$user_id = 1;
+				
+		global $mysqli, $db_table_prefix; 
 		$stmt = $mysqli->prepare("SELECT 
 			*
 			FROM ".$db_table_prefix."messages
@@ -1354,12 +1403,16 @@
 			");
 			$stmt->bind_param("i", $user_id);
 		$stmt->execute();
-		$stmt->bind_result($id, $sender_id, $recipient_id, $subject, $message, $timestamp, $read);
+		$stmt->bind_result($id, $sender_id, $recipient_id, $subject, $message, $timestamp, $read, $draft);
+		$total = 0;
 		while ($stmt->fetch())
 		{
-			$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'read' => $read);
+			if($read == 0)
+			{
+				$total++;
+			}			
 		}
 		$stmt->close();
-		return ($row);
+		return ($total);
 	}
 ?>
