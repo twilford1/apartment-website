@@ -137,32 +137,37 @@
 	}
 
 	//Displays error and success messages
-	function resultBlock($errors,$successes){
+	function resultBlock($errors, $successes)
+	{
 		//Error block
 		if(count($errors) > 0)
 		{
-			echo "<div id='error'>
-			<a href='#' onclick=\"showHide('error');\">[X]</a>
-			<ul>";
-			foreach($errors as $error)
-			{
-				echo "<li>".$error."</li>";
-			}
-			echo "</ul>";
-			echo "</div>";
+			echo "
+			<div class='alert alert-danger' id='error' style='width:50%;'>
+				
+				<button style='float:left;' type='button' class='btn btn-danger' onclick=\"showHide('error');\">Dismiss</button>
+				<ul>";
+				foreach($errors as $error)
+				{
+					echo "<li>".$error."</li>";
+				}
+			echo "</ul>
+			</div>";
 		}
 		//Success block
 		if(count($successes) > 0)
 		{
-			echo "<div id='success'>
-			<a href='#' onclick=\"showHide('success');\">[X]</a>
-			<ul>";
-			foreach($successes as $success)
-			{
-				echo "<li>".$success."</li>";
-			}
-			echo "</ul>";
-			echo "</div>";
+			echo "
+			<div class='alert alert-success' id='success' style='width:50%;'>
+				
+				<button style='float:left;' type='button' class='btn btn-success' onclick=\"showHide('success');\">Dismiss</button>
+				<ul>";
+				foreach($successes as $success)
+				{
+					echo "<li>".$success."</li>";
+				}
+			echo "</ul>
+			</div>";
 		}
 	}
 
@@ -1339,13 +1344,10 @@
 		$stmt->close();
 		return ($row);
 	}
-		
+	
 	//Retrieve all the user's sent messages
 	function fetchMessages($user_id, $mailbox)
 	{
-		//TODO need to remove after testing and check out SQL statement
-		$user_id = 1;
-		
 		switch ($mailbox)
 		{
 			case "inbox":
@@ -1381,6 +1383,13 @@
 					$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'read' => $read, 'draft' => $draft);
 				}
 			}
+			else if($mailbox == "sent")
+			{
+				if($draft != 1)
+				{
+					$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'read' => $read, 'draft' => $draft);
+				}
+			}
 			else
 			{
 				$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'read' => $read, 'draft' => $draft);
@@ -1388,6 +1397,133 @@
 		}
 		$stmt->close();
 		return ($row);
+	}
+	
+	//Retrieve the message details
+	function fetchMessageDetails($id)
+	{
+		global $mysqli, $db_table_prefix; 
+		// Select statement acting weird
+		$stmt = $mysqli->prepare("SELECT 
+			*
+			FROM ".$db_table_prefix."messages
+			WHERE
+			id = ?
+			LIMIT 1");
+			$stmt->bind_param("i", $id);
+		$stmt->execute();
+		$stmt->bind_result($id, $sender_id, $recipient_id, $subject, $message, $timestamp, $read, $draft);
+		while ($stmt->fetch())
+		{
+			$row = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'read' => $read, 'draft' => $draft);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	//Retrieve the message details
+	//TODO SQL statement screwed up...
+	function newMessage($queryType, $sender_id, $recipient_id, $subject, $message, $draft)
+	{
+		global $mysqli, $db_table_prefix;
+		if($queryType == "insert")
+		{
+			//Insert the message into the database
+			$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."messages (
+				sender_id,
+				recipient_id,
+				subject,
+				message,
+				timestamp,
+				read,
+				draft
+				)
+				VALUES (
+				?,
+				?,
+				?,
+				?,
+				'".time()."',
+				'0',
+				?
+				)");
+			
+			$stmt->bind_param("iissii", $sender_id, $recipient_id, $subject, $message, $draft);
+		}
+		else
+		{	
+			//Update the message in the database
+			$stmt = $mysqli->prepare("UPDATE ".$db_table_prefix."messages
+				SET sender_id = ?,
+				SET recipient_id = ?,
+				SET subject = ?,
+				SET message = ?,
+				SET timestamp = ?,
+				SET read = ?,
+				SET draft = ?
+				WHERE
+				id = ?
+				LIMIT 1");
+				
+			$stmt->bind_param("iissii", $sender_id, $recipient_id, $subject, $message, time(), 0, $draft);
+		}
+		
+		$result = $stmt->execute();
+		$stmt->close();	
+		return $result;
+	}
+	
+	//Delete a message from the DB
+	function deleteMessage($id)
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("DELETE FROM ".$db_table_prefix."messages 
+			WHERE id = ?");
+		$stmt->bind_param("i", $id);
+		$result = $stmt->execute();
+		$stmt->close();
+		return $result;
+	}
+	
+	//Read a message
+	function readMessage($id)
+	{
+		global $mysqli, $db_table_prefix;
+		$stmt = $mysqli->prepare("UPDATE ".$db_table_prefix."messages
+			SET read = ?
+			WHERE
+			id = ?
+			LIMIT 1
+			");
+		$stmt->bind_param("ii", 1, $id);
+		$result = $stmt->execute();
+		$stmt->close();
+		return $result;
+	}
+	
+	//Check if a message ID exists in the DB
+	function messageIdExists($id)
+	{
+		global $mysqli, $db_table_prefix;
+		$stmt = $mysqli->prepare("SELECT id
+			FROM ".$db_table_prefix."messages
+			WHERE
+			id = ?
+			LIMIT 1");
+		$stmt->bind_param("i", $id);	
+		$stmt->execute();
+		$stmt->store_result();
+		$num_returns = $stmt->num_rows;
+		$stmt->close();
+		
+		if ($num_returns > 0)
+		{
+			return true;
+		}
+		else
+		{
+			return false;	
+		}
 	}
 	
 	//Retrieve the unread count

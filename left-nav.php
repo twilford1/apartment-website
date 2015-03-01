@@ -26,6 +26,7 @@
 					if(isUserLoggedIn())
 					{
 						echo "
+						<li><a href='messages.php?m=inbox'><span class='glyphicon glyphicon-envelope'></span></a></li>
 						<li><a href='account.php'>Account Home</a></li>
 						<li><a href='user_settings.php'>User Settings</a></li>
 						<li><a href='apartment_listings.php'>Listings</a></li>

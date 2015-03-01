@@ -8,18 +8,18 @@
 	
 	$unreadCount = unreadCount($loggedInUser->user_id);
 	
-	switch ($_GET['m'])
+	switch($_GET['m'])
 	{
 		case "inbox":
-			$messages = fetchMessages($loggedInUser->user_id, "inbox"); //fetchInbox($loggedInUser->user_id);
+			$messages = fetchMessages($loggedInUser->user_id, "inbox");
 			$inboxActive = "class='active'";
 			break;
 		case "sent":
-			$messages = fetchMessages($loggedInUser->user_id, "sent"); //fetchSent($loggedInUser->user_id);
+			$messages = fetchMessages($loggedInUser->user_id, "sent");
 			$sentActive = "class='active'";
 			break;
 		case "drafts":
-			$messages = fetchMessages($loggedInUser->user_id, "drafts"); //
+			$messages = fetchMessages($loggedInUser->user_id, "drafts");
 			$draftsActive = "class='active'";
 			break;
 		default:
@@ -28,9 +28,33 @@
 			$inboxActive = "class='active'";
 	}
 	
+	if(!empty($_POST))
+	{
+		//error_log("Forms posted");
+		
+		//TODO test
+		if(isset($_POST['sendButton']))
+		{
+			newMessage("insert", $loggedInUser->user_id, $_POST['recipient'], $_POST['subject'], $_POST['message'], 0);
+			header("Location: messages.php?m=".$_GET['m']);
+			die();	
+		}
+		else if(isset($_POST['draftButton']))
+		{
+			newMessage("insert", $loggedInUser->user_id, $_POST['recipient'], $_POST['subject'], $_POST['message'], 1);
+			header("Location: messages.php?m=".$_GET['m']);
+			die();
+		}
+	}
+	else
+	{
+		//error_log("Forms not posted");
+	}
+	
 	require_once("models/header.php");
 	
 	echo "
+	
 	<div class='page-header'>
 		<h1>Messages</h1>
 	</div>
@@ -39,9 +63,9 @@
 		<div class='row'>
 			<aside class='col-md-2 pad-right-0'>
 				<ul class='nav nav-pills nav-stacked'>
-					<li ".$inboxActive."><a href='messenger.php?m=inbox'><span class='badge pull-right'>".$unreadCount."</span> Inbox </a></li>
-					<li ".$sentActive."><a href='messenger.php?m=sent'> Sent </a></li>
-					<li ".$draftsActive."><a href='messenger.php?m=drafts'> Drafts </a></li>
+					<li ".$inboxActive."><a href='messages.php?m=inbox'><span class='badge pull-right'>".$unreadCount."</span> Inbox </a></li>
+					<li><a href='messages.php?m=sent'> Sent </a></li>
+					<li><a href='messages.php?m=drafts'> Drafts </a></li>
 				</ul>
 			</aside>
 			
@@ -49,7 +73,7 @@
 				<!--inbox toolbar-->
 				<div class='row'>
 					<div class='col-xs-12'>
-						<a href='messenger.php?m=".$_GET['m']."' class='btn btn-default btn-lg'>
+						<a href='messages.php?m=".$_GET['m']."' class='btn btn-default btn-lg'>
 							<span class='glyphicon glyphicon-refresh'></span>
 						</a>
 						<button class='btn btn-default btn-lg' title='Compose New' data-toggle='modal' data-target='#modalCompose'>
@@ -61,8 +85,6 @@
 								More <span class='caret'></span>
 							</button>
 							<ul class='dropdown-menu' role='menu'>
-								<li><a href='#'>Mark all as read</a></li>
-								<li class='divider'></li>
 								<li><a href='#' data-toggle='modal' data-target='#modalCompose'>Compose new</a></li>
 								<li><a href='user_settings.php' class='text-muted'>Settings</a></li>
 							</ul>
@@ -91,18 +113,32 @@
 								
 								foreach ($messages as $m)
 								{
+									// Print the unread messages in bold
+									if($_GET['m'] == "inbox" && $m['read'] == 0)
+									{
+										$b1 = "<b>";
+										$b2 = "</b>";
+									}
+									else
+									{
+										$b1 = "";
+										$b2 = "";
+									}
+									
 									echo "
 									<tr>
 										<td class='col-sm-3 col-xs-4'>
-											<span>".date("M d, Y - g:i:s A", $m['timestamp'])."</span>
+											<span>".$b1.date("M d, Y - g:i:s A", $m['timestamp']).$b2."</span>
 										</td>
 										<td class='col-sm-2 col-xs-4'>
-											<span>".fetchUsername($m['sender_id'])."</span>
+											<span>".$b1.fetchUsername($m['sender_id']).$b2."</span>
 										</td>
 										<td class='col-sm-4 col-xs-6'>
-											<span>".$m['subject']."</span>
+											<span>".$b1.$m['subject'].$b2."</span>
 										</td>
-										<td class='col-sm-1 col-sm-2'></td>
+										<td class='col-sm-1 col-sm-2'>
+											<a href ='message.php?id=".$m['id']."' class='btn btn-xs btn-primary'>View</a>
+										</td>
 									</tr>";
 								}
 								if(!isset($messages))
@@ -158,50 +194,39 @@
 							<button type='button' class='close' data-dismiss='modal' aria-hidden='true'><span class='glyphicon glyphicon-remove'></span></button>
 							<h4 class='modal-title'>Compose Message</h4>
 						</div>
-						<div class='modal-body'>
-							<form role='form' class='form-horizontal'>
+						
+						<form name='composeNew' action='".$_SERVER['PHP_SELF']."?m=".$_GET['m']."' method='post' class='form-horizontal'>
+							<div class='modal-body'>
 								<div class='form-group'>
 									<label class='col-sm-2'>To</label>
 									<div class='col-sm-10'>
-										<input type='email' class='form-control' placeholder='recipient'>
+										<input type='text' name='recipient' class='form-control' placeholder='recipient'>
 									</div>
 								</div>
 								<div class='form-group'>
 									<label class='col-sm-2'>Subject</label>
-									<div class='col-sm-10'><input type='text' class='form-control' placeholder='subject'></div>
+									<div class='col-sm-10'>
+										<input type='text' name='subject' class='form-control' placeholder='subject'>
+									</div>
 								</div>
 								<div class='form-group'>
 									<label class='col-sm-12'>Message</label>
 									<div class='col-sm-12'>
-										<textarea class='form-control' rows='12'></textarea>
+										<textarea class='form-control' name='message' rows='12'></textarea>
 									</div>
 								</div>
-							</form>
-						</div>
-						<div class='modal-footer'>
-							<button type='button' class='btn btn-default pull-left' data-dismiss='modal'>Cancel</button> 
-							<button type='button' class='btn btn-warning pull-left'>Save Draft</button>
-							<button type='button' class='btn btn-primary '>Send <i class='fa fa-arrow-circle-right fa-lg'></i></button>
-						</div>
+							</div>
+							<div class='modal-footer'>
+								<button type='button' class='btn btn-default pull-left' data-dismiss='modal'>Cancel</button> 
+								<input type='submit' name='draftButton' value='Save Draft' class='btn btn-warning pull-left'></input>
+								<input type='submit' name='sendButton' value='Send' class='btn btn-primary'></input>
+							</div>
+						</form>
 					</div>
-					<!-- /.modal-content -->
 				</div>
-				<!-- /.modal-dialog -->
 			</div>
-			<!-- /.modal compose message -->
-			<div>
-				<!--/row ng-controller-->
-			</div>
-			<!--/container-->
 		</div>
 	</div>";
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	
