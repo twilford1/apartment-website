@@ -12,30 +12,158 @@
  *	-fetchIowaCityApartments
  *	-mathGeoProximity
  *	-mathGeoDistance
- *	-updateLatLng
  *	-geocode
  */
 class MapTest extends PHPUnit_Framework_TestCase
-{
-	public function testTrueIsTrue()
+{	
+	//make sure function works for a set radius
+	public function testFetchIowaCityApartmentsSetRadius()
 	{
-		$foo = true;
-		$this->assertTrue($foo);
+		//fetch the apartments with a radius chosen
+		$apartments = fetchIowaCityApartments(20);
+		
+		//result of the function
+		$result = true;
+		
+		foreach($apartments as $apartment)
+		{
+			if($apartment['address'] == "Wisconsin" && count($apartments) != 5)
+			{
+				$result = false;
+			}
+		}
+		
+		//only tuple which should not be returned is the address "Wisconsin"
+		$this->assertTrue($result);
 	}
 	
-	public function testFetchIowaCityApartmentsSmallRadius()
-	{
-		$apartments = fetchIowaCityApartments(5, 1);
-	}
-	
-	public function testFetchIowaCityApartmentsLargeRadius()
-	{
-		$apartments = fetchIowaCityApartments(5, 1);
-	}
-	
+	//fetch all possible apartments when radius isn't set
 	public function testFetchIowaCityApartmentsNoRadius()
 	{
-		$apartments = fetchIowaCityApartments(5, 1);
+		//fetch the apartments with no radius (default)
+		$apartments = fetchIowaCityApartments();
+		
+		//only tuple which should not be returned is the address "Wisconsin"
+		$this->assertTrue(count($apartments) == 6);
+	}
+	
+	//test that all expected attributes are received
+	public function testFetchIowaCityApartmentsAllAttributes()
+	{
+		//fetch the apartments with no radius (default)
+		$apartments = fetchIowaCityApartments();
+		
+		//result of test
+		$result = false;
+		
+		//check that all of the expected attributes are set for the first tuple
+		if(isset($apartments[0]['apartment_id']) && isset($apartments[0]['latitude']) && isset($apartments[0]['longitude']) && isset($apartments[0]['address']))
+		{
+			$result = true;
+		}
+		
+		$this->assertTrue($result);
+	}
+	
+	//test that proximity in miles is returned correctly
+	public function testMathGeoProximityMiles()
+	{
+		//fetch the proximity
+		$proximity = mathGeoProximity( 30, 30, 20, true);
+		
+		//result of test
+		$result = false;
+		
+		//if the proximity attributes are approximately as expected
+		if(number_format($proximity['longitudeMin'],3) == 29.665
+		&& number_format($proximity['longitudeMax'],3) == 30.335
+		&& number_format($proximity['latitudeMin'],3) == 29.710
+		&& number_format($proximity['latitudeMax'],3) == 30.290)
+		{
+			$result = true;
+		}
+		
+		$this->assertTrue($result);
+	}
+	
+	//test that proximity in km is returned correctly
+	public function testMathGeoProximityKm()
+	{
+		$proximity = mathGeoProximity( 30, 30, 20);
+		
+		//result of test
+		$result = false;
+		
+		//if the proximity attributes are approximately as expected
+		if(number_format($proximity['longitudeMin'],3) == 29.792
+		&& number_format($proximity['longitudeMax'],3) == 30.208
+		&& number_format($proximity['latitudeMin'],3) == 29.820
+		&& number_format($proximity['latitudeMax'],3) == 30.180)
+		{
+			$result = true;
+		}
+		
+		$this->assertTrue($result);
+	}
+	
+	//test that all fields are returned as expected
+	public function testMathGeoProximityAllFields()
+	{
+		$proximity = mathGeoProximity( 30, 30, 20, true);
+		
+		//result of test
+		$result = false;
+		
+		//check that all of the expected attributes are set for the first tuple
+		if(isset($proximity['latitudeMin']) && isset($proximity['latitudeMax']) && isset($proximity['longitudeMin']) && isset($proximity['longitudeMax']))
+		{
+			$result = true;
+		}
+		
+		$this->assertTrue($result);
+	}
+	
+	//test that the distance is correct (miles)
+	public function testMathGeoDistanceMiles()
+	{
+		//get dist in miles
+		$dist1 = mathGeoDistance( 30, 30, 20, 20, true);
+		
+		$this->assertTrue(number_format($dist1,2) == 931.76);
+	}
+	
+	//test that the distance is correct (km)
+	public function testMathGeoDistanceKm()
+	{
+		//get dist in miles
+		$dist1 = mathGeoDistance( 30, 30, 20, 20, true);
+		
+		//get distance in km
+		$dist2 = mathGeoDistance( 30, 30, 20, 20);
+		
+		//assert that km converted to miles is the same result as
+		//getting miles from the function
+		$this->assertTrue(($dist2 * 0.621371192) == $dist1);
+	}
+	
+	//test to see if geocode returns the right coordinates
+	public function testGeocodeIowaCityCoordinates()
+	{
+		//get the coordinates for Iowa City
+		$location = geocode("Iowa City");
+		
+		//make sure they match the known coordinates
+		$this->assertTrue($location[0] == 41.6611277 && $location[1] == -91.5301683);
+	}
+	
+	//test to see if no result is returned for nonsense query
+	public function testGeocodeNoResult()
+	{
+		//get the coordinates for Iowa City
+		$location = geocode("bsjfbjsbjbfkjqwbefkbkjsbadbf");
+		
+		//make sure they match the known coordinates
+		$this->assertTrue($location == NULL);
 	}
 }
 
@@ -44,12 +172,12 @@ class MapTest extends PHPUnit_Framework_TestCase
 //Fetches apartments in a certain radius of Iowa City for the map.php page
 function fetchIowaCityApartments($radius = NULL, $limit = 20)
 {
-	$mockListings = array(["apartment_id" => 1, "latitude" => 41.6660136, "longitude" => -91.544685, "address" => "Iowa City"],
-						  ["apartment_id" => 2, "latitude" => 43, "longitude" => -90, "address" => "Wisconsin"],
-						  ["apartment_id" => 3, "latitude" => 41.6660136, "longitude" => -91.544685, "address" => ""],
-						  ["apartment_id" => 4, "latitude" => 41.6660136, "longitude" => -91.544685, "address" => ""],
-						  ["apartment_id" => 5, "latitude" => 41.6660136, "longitude" => -91.544685, "address" => ""],
-						  ["apartment_id" => 6, "latitude" => 41.6660136, "longitude" => -91.544685, "address" => ""]);
+	$mockListings = array(["apartment_id" => 1, "latitude" => 41.684727, "longitude" => -91.591194, "address" => "20th Ave Place Coralville, IA 52241"],
+						  ["apartment_id" => 8, "latitude" => 43, "longitude" => -90, "address" => "Wisconsin"],
+						  ["apartment_id" => 2, "latitude" => 41.657234, "longitude" => -91.527702, "address" => "317 South Johnson Iowa City, IA 52240"],
+						  ["apartment_id" => 3, "latitude" => 41.663624, "longitude" => -91.535896, "address" => "14 East Market Iowa City, IA 52245"],
+						  ["apartment_id" => 4, "latitude" => 41.653446, "longitude" => -91.526306, "address" => "621 S Dodge Street Iowa City, IA 52240"],
+						  ["apartment_id" => 5, "latitude" => 41.658039, "longitude" => -91.530991, "address" => "318 E Burlington St Iowa City, IA 52240"]);
 	
 	$result = $mockListings;
 	
@@ -81,22 +209,6 @@ function fetchIowaCityApartments($radius = NULL, $limit = 20)
 	{	
 		//get proximity variable in miles for IowaCity coordinates
 		$proximity = mathGeoProximity(41.6660136,-91.544685, $radius, true);
-		
-		//Below code not working; always returns true for some reason...
-		/*
-		//find matches in db
-		$stmt = $mysqli->prepare("SELECT * 
-			FROM   ".$db_table_prefix."apartments
-			WHERE  (latitude BETWEEN ?
-					AND ?)
-			  AND (longitude BETWEEN ?
-					AND ?)
-		");
-		$stmt->bind_param('dddd', number_format($proximity['latitudeMin'], 6), number_format($proximity['latitudeMax'], 6),
-							 number_format($proximity['longitudeMin'], 6), number_format($proximity['longitudeMax'], 6));
-		$result = $stmt->execute();
-		$stmt->close();
-		*/
 
 		// fetch all record and check whether they are really within the radius
 		$recordsWithinRadius = array();
@@ -156,21 +268,6 @@ function mathGeoDistance( $lat1, $lng1, $lat2, $lng2, $miles = false )
 	return ($miles ? ($km * 0.621371192) : $km);
 }
 
-//Update the coordinates of an apartment's location
-function updateLatLng($id, $lat, $lng)
-{
-	global $mysqli,$db_table_prefix;
-	$stmt = $mysqli->prepare("UPDATE ".$db_table_prefix."apartments
-		SET latitude = ?, longitude = ?
-		WHERE
-		apartment_id = ?
-		LIMIT 1");
-	$stmt->bind_param('ddi', $lat, $lng, $id);
-	$result = $stmt->execute();
-	$stmt->close();
-	return $result;
-}
-
 // function to geocode address, it will return false if unable to geocode address
 function geocode($address)
 {
@@ -186,7 +283,7 @@ function geocode($address)
 	// decode the json
 	$resp = json_decode($resp_json, true);
 	// response status will be 'OK', if able to geocode given address
-	if($resp['status']='OK'){
+	if($resp['status']=='OK'){
  
 		// get the important data
 		$lat = $resp['results'][0]['geometry']['location']['lat'];

@@ -1,3 +1,9 @@
+<html>
+	<head>
+		<link href="ratingfiles/ratings.css" rel="stylesheet" type="text/css" />
+	</head>
+</html>
+
 <?php
 	require_once("models/config.php");
 	
@@ -24,6 +30,7 @@
 		<h2>Apartment Listing</h2>
 	</center>
 	<br>
+	<div class='srtgs'  id='rt_".$aptId."'></div>
 	<div class='container'>
 		<div class='row'>			
 			<div class='col-xs-12 col-sm-12 col-md-6 col-lg-6 col-xs-offset-0 col-sm-offset-0 col-md-offset-3 col-lg-offset-3 toppad' >
@@ -80,7 +87,7 @@
 									</tbody>
 								</table>
 								<center>
-									<a href='#' class='btn btn-primary'>View Lanlord</a>
+									<a href='#' class='btn btn-primary'>View Landlord</a>
 									<a href='#' class='btn btn-primary'>View on Map</a>
 								</center>
 							</div>
@@ -173,7 +180,9 @@
             <!-- /.row -->
         </footer>
 
-    </div>";
+    </div>
+	
+	<script src='ratingfiles/ratings.js' type='text/javascript'></script>";
 	
 	include 'models/footer.php';
 ?>

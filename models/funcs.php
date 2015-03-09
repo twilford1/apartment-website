@@ -1427,7 +1427,7 @@
 		// decode the json
 		$resp = json_decode($resp_json, true);
 		// response status will be 'OK', if able to geocode given address
-		if($resp['status']='OK'){
+		if($resp['status']=='OK'){
 	 
 			// get the important data
 			$lat = $resp['results'][0]['geometry']['location']['lat'];

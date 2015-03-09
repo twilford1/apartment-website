@@ -7,10 +7,22 @@
 	}
 		
 	// create apartment 
-	function createApartment($name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated)
+	function createApartment($name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status)
 	{
+		error_log("name - ".$name." - ".gettype($name));
+		error_log("address - ".$address." - ".gettype($address));
+		error_log("latitude - ".$latitude." - ".gettype($latitude));
+		error_log("longitude - ".$longitude." - ".gettype($longitude));
+		error_log("num_bedrooms - ".$num_bedrooms." - ".gettype($num_bedrooms));
+		error_log("num_bathrooms - ".$num_bathrooms." - ".gettype($num_bathrooms));
+		error_log("landlord_id - ".$landlord_id." - ".gettype($landlord_id));
+		error_log("price - ".$price." - ".gettype($price));
+		error_log("deposit - ".$deposit." - ".gettype($deposit));
+		error_log("description - ".$description." - ".gettype($description));
+		error_log("status - ".$status." - ".gettype($status));
+		
 		global $mysqli, $db_table_prefix; 
-		$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."landlords (
+		$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."apartments (
 			name,
 			address,
 			latitude,
@@ -36,9 +48,21 @@
 			?,
 			?,
 			?,
-			?,
+			'".time()."'
 			)");
-		$stmt->bind_param("ssddiiiddsss", $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated); // s for string i for integer 
+			
+			
+		if (!$stmt)
+		{
+			error_log("STMT ERROR!!!!!!!!!!");
+			error_log($mysqli->errorInfo());
+		}
+		else
+		{
+			error_log("STMT prepared correctly");
+		}
+
+		$stmt->bind_param("ssddiiiddss", $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status); // s for string i for integer 
 		$result = $stmt->execute();
 		$stmt->close();	
 		return $result;
@@ -48,14 +72,12 @@
 	if(!empty($_POST))
 	{
 		$errors = array();
-		$apartmentname = trim($_POST["apartment_name"]);
+		$name = trim($_POST['apartment_name']);
 		$address = trim($_POST["address"]);
-		$num_bedrooms = trim($_POST["num_bedrooms"]);
-		$num_bathrooms = trim($_POST["num_bathrooms"]);
-		$price = trim($_POST["price"]);
+		$num_bedrooms = (int)$_POST["num_bedrooms"];
+		$num_bathrooms = (int)$_POST["num_bathrooms"];
+		$price = (double)$_POST["price"];
 		$description = trim($_POST["description"]);
-		
-		$apartment = createApartment($name, $address, null, null, $num_bedrooms, $num_bathrooms, null, $price, $deposit, $description, null, null);
 		/*
 		if(minMaxRange(5, 25, $username))
 		{
@@ -84,16 +106,18 @@
 		if(!isValidEmail($email))
 		{
 			$errors[] = lang("ACCOUNT_INVALID_EMAIL");
-		}
+		}*/
+		
+		$apartment = createApartment($name, $address, NULL, NULL, $num_bedrooms, $num_bathrooms, 1,NULL, NULL, $description, "available");
 		//End data validation
-		if(count($errors) == 0)
+		/*if(true)count($errors) == 0)
 		{	
 			//Construct a user object
 			//***************$user = new User($username, $displayname, $password, $email);
-			$apartment = createApartment($name, $address, null, null, $num_bedrooms, $num_bathrooms, null, $price, $deposit, $description, null, null);
+			//$apartment = createApartment($name, $address, null, null, $num_bedrooms, $num_bathrooms, null, $price, $deposit, $description, null, null);
 			
 			//Checking this flag tells us whether there were any errors such as possible data duplication occured
-			/*if(!$user->status)
+			if(!$user->status)
 			{
 				if($user->username_taken) $errors[] = lang("ACCOUNT_USERNAME_IN_USE", array($username));
 				if($user->displayname_taken) $errors[] = lang("ACCOUNT_DISPLAYNAME_IN_USE", array($displayname));
@@ -107,11 +131,11 @@
 					if($user->mail_failure) $errors[] = lang("MAIL_ERROR");
 					if($user->sql_failure)  $errors[] = lang("SQL_ERROR");
 				}
-			} */
-		}
-		if(count($errors) == 0)
+			} 
+		}*/
+		if(!isempty($apartment))//count($errors) == 0)
 		{
-			//$successes[] = $user->success;
+			$successes[] = $apartment->success;
 		}
 		
 		
