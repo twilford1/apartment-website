@@ -81,6 +81,7 @@
 				echo "
 				</tbody>
 			</table>
+			<a href='apartment_post.php' class='btn btn-primary'>Post Property</a>
 		</div>
 	</center>";
 	

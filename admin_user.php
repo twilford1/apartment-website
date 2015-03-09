@@ -336,48 +336,7 @@
 							echo"
 						</td>
 					</tr>
-					<tr>
-						<td>
-							<b>Remove Subscriptions:</b>
-						</td>
-						<td>";						
-							//List of subscriptions user is apart of
-							$subscriptions = fetchAllSubscriptions($loggedInUser->user_id);
-							if($subscriptions == null)
-							{
-								echo "No Subscriptions";
-							}
-							else
-							{
-								$subscription = explode("-", $subscriptions);
-								foreach ($subscription as $v1)
-								{
-									echo "<input type='checkbox' name='removeSubject[".$v1['id']."]' id='removeSubject[".$v1['id']."]' value='".$v1['id']."'> ".fetchSubjectDetails($v1)['name'];
-									echo "<br>";
-								}
-							}
-							echo"
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<b>Add Subscriptions:</b>
-						</td>
-						<td>";						
-							//List of subscriptions user is apart of
-							$subscriptions = fetchAllSubscriptions($loggedInUser->user_id);
-							$subscription = explode("-", $subscriptions);
-							foreach ($_SESSION["subjectList"] as $item)
-							{
-								if(!in_array($item['id'], $subscription))
-								{
-									echo "<input type='checkbox' name='addSubject[".$item['id']."]' id='addSubject[".$item['id']."]' value='".$item['id']."'> ".fetchSubjectDetails($item['id'])['name'];
-									echo "<br>";
-								}
-							}
-							echo"
-						</td>
-					</tr>
+					
 				</tbody>
 			</table>
 			<input type='submit' value='Update' class='btn btn-primary' style='max-width:200px;' />

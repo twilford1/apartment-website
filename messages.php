@@ -8,24 +8,28 @@
 	
 	$unreadCount = unreadCount($loggedInUser->user_id);
 	
+	if(!isset($_GET['m']))
+	{
+		$_GET['m'] = "inbox";
+	}	
 	switch($_GET['m'])
 	{
 		case "inbox":
 			$messages = fetchMessages($loggedInUser->user_id, "inbox");
-			$inboxActive = "class='active'";
+			$folderActive = "class='active'";
 			break;
 		case "sent":
 			$messages = fetchMessages($loggedInUser->user_id, "sent");
-			$sentActive = "class='active'";
+			$folderActive = "class='active'";
 			break;
 		case "drafts":
 			$messages = fetchMessages($loggedInUser->user_id, "drafts");
-			$draftsActive = "class='active'";
+			$folderActive = "class='active'";
 			break;
 		default:
 			$_GET['m'] = "inbox";
 			$messages = fetchMessages($loggedInUser->user_id, "inbox");
-			$inboxActive = "class='active'";
+			$folderActive = "class='active'";
 	}
 	
 	if(!empty($_POST))
@@ -63,7 +67,7 @@
 		<div class='row'>
 			<aside class='col-md-2 pad-right-0'>
 				<ul class='nav nav-pills nav-stacked'>
-					<li ".$inboxActive."><a href='messages.php?m=inbox'><span class='badge pull-right'>".$unreadCount."</span> Inbox </a></li>
+					<li ".$folderActive."><a href='messages.php?m=inbox'><span class='badge pull-right'>".$unreadCount."</span> Inbox </a></li>
 					<li><a href='messages.php?m=sent'> Sent </a></li>
 					<li><a href='messages.php?m=drafts'> Drafts </a></li>
 				</ul>
@@ -114,7 +118,7 @@
 								foreach ($messages as $m)
 								{
 									// Print the unread messages in bold
-									if($_GET['m'] == "inbox" && $m['read'] == 0)
+									if($_GET['m'] == "inbox" && $m['wasRead'] == 0)
 									{
 										$b1 = "<b>";
 										$b2 = "</b>";

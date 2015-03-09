@@ -1189,6 +1189,37 @@
 		if($terms != NULL)
 		{
 			// TODO custom search results
+			
+			// Return all listings with limit
+			if(isset($terms['limit']))
+			{
+				global $mysqli, $db_table_prefix; 
+				$stmt = $mysqli->prepare("SELECT 
+					apartment_id,
+					name,
+					address,
+					latitude,
+					longitude,
+					num_bedrooms,
+					num_bathrooms,
+					landlord_id,
+					price,
+					deposit,
+					description,
+					status,
+					last_updated
+					FROM ".$db_table_prefix."apartments 
+					LIMIT ".$terms['limit']);
+				$stmt->execute();
+				$stmt->bind_result($apartment_id, $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated);
+				
+				while ($stmt->fetch())
+				{
+					$row[] = array('apartment_id' => $apartment_id, 'name' => $name, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'num_bedrooms' => $num_bedrooms, 'num_bathrooms' => $num_bathrooms, 'landlord_id' => $landlord_id, 'price' => $price, 'deposit' => $deposit, 'description' => $description, 'status' => $status, 'last_updated' => $last_updated);
+				}
+				$stmt->close();
+				return ($row);
+			}
 		}
 		else
 		{
@@ -1255,18 +1286,158 @@
 		return ($row);
 	}
 	
-	function fetchIowaCityApartments($radius = NULL)
+    //Fetches apartments in a certain radius of Iowa City for the map.php page
+	function fetchIowaCityApartments($radius = NULL, $limit = 20)
 	{
-		if($radius != NULL)
-		{
-			//return only the locations within the given radius of Iowa City
-			//(could also take in a location variable as the center)
+		$terms = array("limit"=>$limit);
+		$result = fetchListings($terms);
+		
+		//check if apartments have latitude and longitude values yet
+		foreach($result as $apartment)
+		{	
+			if($apartment['latitude'] == NULL || $apartment['longitude'] == NULL)
+			{
+				$results = geocode($apartment['address']);
+				$apartment['latitude'] = $results[0];
+				$apartment['longitude'] = $results[1];
+				
+				//if a result was found
+				if(($apartment['latitude'] != NULL) && ($apartment['longitude'] != NULL))
+				{
+					//update each coordinates
+					updateLatLng($apartment['apartment_id'], $apartment['latitude'], $apartment['longitude']);
+				}
+			}
 		}
-		//change this later to return only within a default radius?
+		
+		//fetch all listings
+		if($radius == NULL)
+		{
+			return $result;
+		}
+		//return only the locations within the given radius of Iowa City
+		else
+		{	
+			global $mysqli,$db_table_prefix;
+			
+			//get proximity variable in miles for IowaCity coordinates
+			$proximity = mathGeoProximity(41.6660136,-91.544685, $radius, true);
+			
+			//Below code not working; always returns true for some reason...
+			/*
+			//find matches in db
+			$stmt = $mysqli->prepare("SELECT * 
+				FROM   ".$db_table_prefix."apartments
+				WHERE  (latitude BETWEEN ?
+						AND ?)
+				  AND (longitude BETWEEN ?
+						AND ?)
+			");
+			$stmt->bind_param('dddd', number_format($proximity['latitudeMin'], 6), number_format($proximity['latitudeMax'], 6),
+								 number_format($proximity['longitudeMin'], 6), number_format($proximity['longitudeMax'], 6));
+			$result = $stmt->execute();
+			$stmt->close();
+			*/
+
+			// fetch all record and check whether they are really within the radius
+			$recordsWithinRadius = array();
+			
+			//check each result
+			foreach($result as $apartment)
+			{
+				if($apartment['latitude'] != NULL && $apartment['longitude'] != NULL)
+				{
+					$distance = mathGeoDistance(41.6660136,-91.544685, $apartment['latitude'], $apartment['longitude'], true);
+					
+					if ($distance <= $radius) 
+					{
+						array_push($recordsWithinRadius, $apartment);
+					}
+				}
+			}
+			
+			return $recordsWithinRadius;
+		}
+	}
+	
+	// calculate geographical proximity
+	function mathGeoProximity( $latitude, $longitude, $radius, $miles = false )
+	{
+		$radius = $miles ? $radius : ($radius * 0.621371192);
+
+		$lng_min = $longitude - $radius / abs(cos(deg2rad($latitude)) * 69);
+		$lng_max = $longitude + $radius / abs(cos(deg2rad($latitude)) * 69);
+		$lat_min = $latitude - ($radius / 69);
+		$lat_max = $latitude + ($radius / 69);
+
+		return array(
+			'latitudeMin'  => $lat_min,
+			'latitudeMax'  => $lat_max,
+			'longitudeMin' => $lng_min,
+			'longitudeMax' => $lng_max
+		);
+	}
+
+	// calculate geographical distance between 2 points
+	function mathGeoDistance( $lat1, $lng1, $lat2, $lng2, $miles = false )
+	{
+		$pi80 = M_PI / 180;
+		$lat1 *= $pi80;
+		$lng1 *= $pi80;
+		$lat2 *= $pi80;
+		$lng2 *= $pi80;
+
+		$r = 6372.797; // mean radius of Earth in km
+		$dlat = $lat2 - $lat1;
+		$dlng = $lng2 - $lng1;
+		$a = sin($dlat / 2) * sin($dlat / 2) + cos($lat1) * cos($lat2) * sin($dlng / 2) * sin($dlng / 2);
+		$c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+		$km = $r * $c;
+
+		return ($miles ? ($km * 0.621371192) : $km);
+	}
+	
+	//Update the coordinates of an apartment's location
+	function updateLatLng($id, $lat, $lng)
+	{
+		global $mysqli,$db_table_prefix;
+		$stmt = $mysqli->prepare("UPDATE ".$db_table_prefix."apartments
+			SET latitude = ?, longitude = ?
+			WHERE
+			apartment_id = ?
+			LIMIT 1");
+		$stmt->bind_param('ddi', $lat, $lng, $id);
+		$result = $stmt->execute();
+		$stmt->close();
+		return $result;
+	}
+	
+	// function to geocode address, it will return false if unable to geocode address
+	function geocode($address)
+	{
+		// url encode the address
+		$address = urlencode($address);
+		 
+		// google map geocode api url
+		$url = "http://maps.google.com/maps/api/geocode/json?sensor=false&address={$address}";
+	 
+		// get the json response
+		$resp_json = file_get_contents($url);
+		 
+		// decode the json
+		$resp = json_decode($resp_json, true);
+		// response status will be 'OK', if able to geocode given address
+		if($resp['status']='OK'){
+	 
+			// get the important data
+			$lat = $resp['results'][0]['geometry']['location']['lat'];
+			$lng = $resp['results'][0]['geometry']['location']['lng'];
+			
+			return array($lat, $lng);
+		}
 		else
 		{
-			//fetch all listings
-			return fetchListings();
+			return NULL;
 		}
 	}
 	
@@ -1364,7 +1535,6 @@
 		}
 		
 		global $mysqli, $db_table_prefix; 
-		// Select statement acting weird
 		$stmt = $mysqli->prepare("SELECT 
 			*
 			FROM ".$db_table_prefix."messages
@@ -1373,26 +1543,26 @@
 			");
 			$stmt->bind_param("i", $user_id);
 		$stmt->execute();
-		$stmt->bind_result($id, $sender_id, $recipient_id, $subject, $message, $timestamp, $read, $draft);
+		$stmt->bind_result($id, $sender_id, $recipient_id, $subject, $message, $timestamp, $wasRead, $draft);
 		while ($stmt->fetch())
 		{
 			if($mailbox == "drafts")
 			{
 				if($draft == 1)
 				{
-					$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'read' => $read, 'draft' => $draft);
+					$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'wasRead' => $wasRead, 'draft' => $draft);
 				}
 			}
 			else if($mailbox == "sent")
 			{
 				if($draft != 1)
 				{
-					$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'read' => $read, 'draft' => $draft);
+					$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'wasRead' => $wasRead, 'draft' => $draft);
 				}
 			}
 			else
 			{
-				$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'read' => $read, 'draft' => $draft);
+				$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'wasRead' => $wasRead, 'draft' => $draft);
 			}
 		}
 		$stmt->close();
@@ -1412,17 +1582,16 @@
 			LIMIT 1");
 			$stmt->bind_param("i", $id);
 		$stmt->execute();
-		$stmt->bind_result($id, $sender_id, $recipient_id, $subject, $message, $timestamp, $read, $draft);
+		$stmt->bind_result($id, $sender_id, $recipient_id, $subject, $message, $timestamp, $wasRead, $draft);
 		while ($stmt->fetch())
 		{
-			$row = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'read' => $read, 'draft' => $draft);
+			$row = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'wasRead' => $wasRead, 'draft' => $draft);
 		}
 		$stmt->close();
 		return ($row);
 	}
 	
 	//Retrieve the message details
-	//TODO SQL statement screwed up...
 	function newMessage($queryType, $sender_id, $recipient_id, $subject, $message, $draft)
 	{
 		global $mysqli, $db_table_prefix;
@@ -1435,7 +1604,7 @@
 				subject,
 				message,
 				timestamp,
-				read,
+				wasRead,
 				draft
 				)
 				VALUES (
@@ -1459,7 +1628,7 @@
 				SET subject = ?,
 				SET message = ?,
 				SET timestamp = ?,
-				SET read = ?,
+				SET wasRead = ?,
 				SET draft = ?
 				WHERE
 				id = ?
@@ -1490,12 +1659,12 @@
 	{
 		global $mysqli, $db_table_prefix;
 		$stmt = $mysqli->prepare("UPDATE ".$db_table_prefix."messages
-			SET read = ?
+			SET wasRead = 1
 			WHERE
 			id = ?
 			LIMIT 1
 			");
-		$stmt->bind_param("ii", 1, $id);
+		$stmt->bind_param("i", $id);
 		$result = $stmt->execute();
 		$stmt->close();
 		return $result;
@@ -1528,9 +1697,7 @@
 	
 	//Retrieve the unread count
 	function unreadCount($user_id)
-	{
-		$user_id = 1;
-				
+	{		
 		global $mysqli, $db_table_prefix; 
 		$stmt = $mysqli->prepare("SELECT 
 			*
@@ -1539,11 +1706,11 @@
 			");
 			$stmt->bind_param("i", $user_id);
 		$stmt->execute();
-		$stmt->bind_result($id, $sender_id, $recipient_id, $subject, $message, $timestamp, $read, $draft);
+		$stmt->bind_result($id, $sender_id, $recipient_id, $subject, $message, $timestamp, $wasRead, $draft);
 		$total = 0;
 		while ($stmt->fetch())
 		{
-			if($read == 0)
+			if($wasRead == 0)
 			{
 				$total++;
 			}			

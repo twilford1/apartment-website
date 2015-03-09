@@ -46,17 +46,21 @@
 		die();	
 	}
 	
-	if($message['read'] == 0)
+	if($message['wasRead'] == 0)
 	{
-		//TODO need to fix
-		//readMessage($message['id']);
+		readMessage($message['id']);
 	}
 	
 	require_once("models/header.php");
 	
 	echo "
 	<div class='page-header'>
-		<h1>Message Details</h1>
+		<h1>
+			<a href ='messages.php?m=inbox' class='btn btn-default'>
+				<span class='glyphicon glyphicon-circle-arrow-left'></span>
+			</a>
+			Message Details
+		</h1>
 	</div>
 	
 	<div class='row'>
