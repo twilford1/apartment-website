@@ -1,12 +1,4 @@
 <?php
-/*
-UserCake Version: 2.0.2
-http://usercake.com
-*/
-
-/*
-%m1% - Dymamic markers which are replaced at run time by the relevant index.
-*/
 
 $lang = array();
 

@@ -16,47 +16,107 @@
 	{
 		case "inbox":
 			$messages = fetchMessages($loggedInUser->user_id, "inbox");
-			$folderActive = "class='active'";
+			$inboxActive = "class='active'";
+			$sentActive = "";
+			$draftsActive = "";
 			break;
 		case "sent":
 			$messages = fetchMessages($loggedInUser->user_id, "sent");
-			$folderActive = "class='active'";
+			$sentActive = "class='active'";
+			$inboxActive = "";
+			$draftsActive = "";
 			break;
 		case "drafts":
 			$messages = fetchMessages($loggedInUser->user_id, "drafts");
-			$folderActive = "class='active'";
+			$draftsActive = "class='active'";
+			$inboxActive = "";
+			$sentActive = "";
 			break;
 		default:
 			$_GET['m'] = "inbox";
 			$messages = fetchMessages($loggedInUser->user_id, "inbox");
-			$folderActive = "class='active'";
+			$inboxActive = "class='active'";
+			$sentActive = "";
+			$draftsActive = "";
 	}
-	
+		
 	if(!empty($_POST))
 	{
-		//error_log("Forms posted");
-		
-		//TODO test
 		if(isset($_POST['sendButton']))
 		{
-			newMessage("insert", $loggedInUser->user_id, $_POST['recipient'], $_POST['subject'], $_POST['message'], 0);
-			header("Location: messages.php?m=".$_GET['m']);
-			die();	
+			$recipientID = fetchUserID($_POST['recipient']);
+			
+			if(isset($recipientID))
+			{
+				if($_POST['subject'] == "")
+				{
+					$_POST['subject'] = "(no subject)";
+				}
+				
+				if(strlen($_POST['subject']) <= 60)
+				{
+					if(newMessage("insert", $loggedInUser->user_id, $recipientID, $_POST['subject'], $_POST['message'], 0))
+					{
+						$successes = [0 => "Message Sent"];
+					}
+					else
+					{
+						$errors[] = lang("SQL_ERROR");
+					}
+				}
+				else
+				{
+					$errors = [0 => "Subject too long"];
+				}				
+			}
+			else
+			{
+				$errors = [0 => "Invalid Recipient"];
+			}
+			//header("Location: messages.php?m=".$_GET['m']);
+			//die();
 		}
 		else if(isset($_POST['draftButton']))
-		{
-			newMessage("insert", $loggedInUser->user_id, $_POST['recipient'], $_POST['subject'], $_POST['message'], 1);
-			header("Location: messages.php?m=".$_GET['m']);
-			die();
+		{	
+			$recipientID = fetchUserID($_POST['recipient']);
+			
+			if(!isset($recipientID))
+			{
+				$recipientID = null;
+			}
+			
+			if($_POST['subject'] == "")
+			{
+				$_POST['subject'] = "(no subject)";
+			}
+			
+			if(strlen($_POST['subject']) <= 60)
+			{
+				if(newMessage("draft", $loggedInUser->user_id, $recipientID, $_POST['subject'], $_POST['message'], 0))
+				{
+					$successes = [0 => "Message Sent"];
+				}
+				else
+				{
+					$errors[] = lang("SQL_ERROR");
+				}
+			}
+			else
+			{
+				$errors = [0 => "Subject too long"];
+			}
+			
+			//newMessage("insert", $loggedInUser->user_id, $_POST['recipient'], $_POST['subject'], $_POST['message'], 1);
+			//header("Location: messages.php?m=".$_GET['m']);
+			//die();
 		}
-	}
-	else
-	{
-		//error_log("Forms not posted");
 	}
 	
 	require_once("models/header.php");
 	
+	echo "<center>";
+	echo resultBlock($errors, $successes);
+	echo "</center>";
 	echo "
 	
 	<div class='page-header'>
@@ -67,9 +127,9 @@
 		<div class='row'>
 			<aside class='col-md-2 pad-right-0'>
 				<ul class='nav nav-pills nav-stacked'>
-					<li ".$folderActive."><a href='messages.php?m=inbox'><span class='badge pull-right'>".$unreadCount."</span> Inbox </a></li>
-					<li><a href='messages.php?m=sent'> Sent </a></li>
-					<li><a href='messages.php?m=drafts'> Drafts </a></li>
+					<li ".$inboxActive."><a href='messages.php?m=inbox'><span class='badge pull-right'>".$unreadCount."</span> Inbox </a></li>
+					<li ".$sentActive."><a href='messages.php?m=sent'> Sent </a></li>
+					<li ".$draftsActive."><a href='messages.php?m=drafts'> Drafts </a></li>
 				</ul>
 			</aside>
 			
@@ -89,7 +149,8 @@
 								More <span class='caret'></span>
 							</button>
 							<ul class='dropdown-menu' role='menu'>
-								<li><a href='#' data-toggle='modal' data-target='#modalCompose'>Compose new</a></li>
+								<li><a data-toggle='modal' data-target='#modalCompose'>Compose new</a></li>
+								<li><a class='text-muted'>Mark All Read</a></li>
 								<li><a href='user_settings.php' class='text-muted'>Settings</a></li>
 							</ul>
 						</div>
@@ -210,7 +271,7 @@
 								<div class='form-group'>
 									<label class='col-sm-2'>Subject</label>
 									<div class='col-sm-10'>
-										<input type='text' name='subject' class='form-control' placeholder='subject'>
+										<input type='text' name='subject' maxlength='60' class='form-control' placeholder='subject'>
 									</div>
 								</div>
 								<div class='form-group'>

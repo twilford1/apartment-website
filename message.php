@@ -150,6 +150,9 @@
 							
 							<br>
 							<center>
+								<a class='btn btn-default'>
+									Read
+								</a>
 								<a class='btn btn-primary' data-toggle='collapse' href='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>
 									Reply
 								</a>

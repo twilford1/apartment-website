@@ -1516,6 +1516,27 @@
 		return ($row);
 	}
 	
+	//Return the user's id given the specified username
+	function fetchUserID($username = NULL)
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			id
+			FROM ".$db_table_prefix."users
+			WHERE user_name = ?
+			LIMIT 1");
+			$stmt->bind_param("s", $username);
+		$stmt->execute();
+		$stmt->bind_result($user);
+		$row = null;
+		while ($stmt->fetch())
+		{
+			$row = $user;
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
 	//Retrieve all the user's sent messages
 	function fetchMessages($user_id, $mailbox)
 	{
