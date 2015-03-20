@@ -6,40 +6,6 @@
 		die();
 	}
 	
-	$unreadCount = unreadCount($loggedInUser->user_id);
-	
-	if(!isset($_GET['m']))
-	{
-		$_GET['m'] = "inbox";
-	}	
-	switch($_GET['m'])
-	{
-		case "inbox":
-			$messages = fetchMessages($loggedInUser->user_id, "inbox");
-			$inboxActive = "class='active'";
-			$sentActive = "";
-			$draftsActive = "";
-			break;
-		case "sent":
-			$messages = fetchMessages($loggedInUser->user_id, "sent");
-			$sentActive = "class='active'";
-			$inboxActive = "";
-			$draftsActive = "";
-			break;
-		case "drafts":
-			$messages = fetchMessages($loggedInUser->user_id, "drafts");
-			$draftsActive = "class='active'";
-			$inboxActive = "";
-			$sentActive = "";
-			break;
-		default:
-			$_GET['m'] = "inbox";
-			$messages = fetchMessages($loggedInUser->user_id, "inbox");
-			$inboxActive = "class='active'";
-			$sentActive = "";
-			$draftsActive = "";
-	}
-		
 	if(!empty($_POST))
 	{
 		if(isset($_POST['sendButton']))
@@ -55,13 +21,20 @@
 				
 				if(strlen($_POST['subject']) <= 60)
 				{
-					if(newMessage("insert", $loggedInUser->user_id, $recipientID, $_POST['subject'], $_POST['message'], 0))
+					if($_POST['message'] != "")
 					{
-						$successes = [0 => "Message Sent"];
+						if(newMessage($loggedInUser->user_id, $recipientID, $_POST['subject'], $_POST['message'], 0))
+						{
+							$successes = [0 => "Message Sent"];
+						}
+						else
+						{
+							$errors[] = lang("SQL_ERROR");
+						}
 					}
 					else
 					{
-						$errors[] = lang("SQL_ERROR");
+						$errors = [0 => "Message empty"];
 					}
 				}
 				else
@@ -73,8 +46,6 @@
 			{
 				$errors = [0 => "Invalid Recipient"];
 			}
-			//header("Location: messages.php?m=".$_GET['m']);
-			//die();
 		}
 		else if(isset($_POST['draftButton']))
 		{	
@@ -92,9 +63,9 @@
 			
 			if(strlen($_POST['subject']) <= 60)
 			{
-				if(newMessage("draft", $loggedInUser->user_id, $recipientID, $_POST['subject'], $_POST['message'], 0))
+				if(newMessage($loggedInUser->user_id, $recipientID, $_POST['subject'], $_POST['message'], 1))
 				{
-					$successes = [0 => "Message Sent"];
+					$successes = [0 => "Draft Saved"];
 				}
 				else
 				{
@@ -105,11 +76,45 @@
 			{
 				$errors = [0 => "Subject too long"];
 			}
-			
-			//newMessage("insert", $loggedInUser->user_id, $_POST['recipient'], $_POST['subject'], $_POST['message'], 1);
-			//header("Location: messages.php?m=".$_GET['m']);
-			//die();
 		}
+	}
+	
+	$unreadCount = unreadCount($loggedInUser->user_id);
+	
+	if(!isset($_GET['m']))
+	{
+		$_GET['m'] = "inbox";
+	}	
+	switch($_GET['m'])
+	{
+		case "inbox":
+			$messages = fetchMessages($loggedInUser->user_id, "inbox");
+			$inboxActive = "class='active'";
+			$sentActive = "";
+			$draftsActive = "";
+			$tableHeader = "Sender";
+			break;
+		case "sent":
+			$messages = fetchMessages($loggedInUser->user_id, "sent");
+			$sentActive = "class='active'";
+			$inboxActive = "";
+			$draftsActive = "";
+			$tableHeader = "Recipient";
+			break;
+		case "drafts":
+			$messages = fetchMessages($loggedInUser->user_id, "drafts");
+			$draftsActive = "class='active'";
+			$inboxActive = "";
+			$sentActive = "";
+			$tableHeader = "Recipient";
+			break;
+		default:
+			$_GET['m'] = "inbox";
+			$messages = fetchMessages($loggedInUser->user_id, "inbox");
+			$inboxActive = "class='active'";
+			$sentActive = "";
+			$draftsActive = "";
+			$tableHeader = "Sender";
 	}
 	
 	require_once("models/header.php");
@@ -117,6 +122,7 @@
 	echo "<center>";
 	echo resultBlock($errors, $successes);
 	echo "</center>";
+	
 	echo "
 	
 	<div class='page-header'>
@@ -169,7 +175,7 @@
 							<thead class='hidden-xs'>
 								<tr>
 									<td class='col-sm-3'><a href='#'><strong>Date / Time</strong></a></td>
-									<td class='col-sm-2'><a href='#'><strong>Sender</strong></a></td>
+									<td class='col-sm-2'><a href='#'><strong>".$tableHeader."</strong></a></td>
 									<td class='col-sm-4'><a href='#'><strong>Subject</strong></a></td>
 									<td class='col-sm-1'></td>
 								</tr>
@@ -190,13 +196,22 @@
 										$b2 = "";
 									}
 									
+									if($_GET['m'] == "inbox")
+									{
+										$tableField = $m['sender_id'];
+									}
+									else
+									{
+										$tableField = $m['recipient_id'];
+									}
+									
 									echo "
 									<tr>
 										<td class='col-sm-3 col-xs-4'>
 											<span>".$b1.date("M d, Y - g:i:s A", $m['timestamp']).$b2."</span>
 										</td>
 										<td class='col-sm-2 col-xs-4'>
-											<span>".$b1.fetchUsername($m['sender_id']).$b2."</span>
+											<span>".$b1.fetchUsername($tableField).$b2."</span>
 										</td>
 										<td class='col-sm-4 col-xs-6'>
 											<span>".$b1.$m['subject'].$b2."</span>

@@ -1613,53 +1613,50 @@
 	}
 	
 	//Retrieve the message details
-	function newMessage($queryType, $sender_id, $recipient_id, $subject, $message, $draft)
+	function newMessage($sender_id, $recipient_id, $subject, $message, $draft)
 	{
 		global $mysqli, $db_table_prefix;
-		if($queryType == "insert")
-		{
-			//Insert the message into the database
-			$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."messages (
-				sender_id,
-				recipient_id,
-				subject,
-				message,
-				timestamp,
-				wasRead,
-				draft
-				)
-				VALUES (
-				?,
-				?,
-				?,
-				?,
-				'".time()."',
-				'0',
-				?
-				)");
-			
-			$stmt->bind_param("iissii", $sender_id, $recipient_id, $subject, $message, $draft);
-		}
-		else
-		{	
-			//Update the message in the database
-			$stmt = $mysqli->prepare("UPDATE ".$db_table_prefix."messages
-				SET sender_id = ?,
-				SET recipient_id = ?,
-				SET subject = ?,
-				SET message = ?,
-				SET timestamp = ?,
-				SET wasRead = ?,
-				SET draft = ?
-				WHERE
-				id = ?
-				LIMIT 1");
-				
-			$stmt->bind_param("iissii", $sender_id, $recipient_id, $subject, $message, time(), 0, $draft);
-		}
-		
+		//Insert the message into the database
+		$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."messages (
+			sender_id,
+			recipient_id,
+			subject,
+			message,
+			timestamp,
+			wasRead,
+			draft
+			)
+			VALUES (
+			?,
+			?,
+			?,
+			?,
+			'".time()."',
+			'0',
+			?
+			)");		
+		$stmt->bind_param("iissi", $sender_id, $recipient_id, $subject, $message, $draft);
 		$result = $stmt->execute();
 		$stmt->close();	
+		return $result;
+	}
+	
+	function updateMessage($message_id, $recipient_id, $subject, $message, $draft)
+	{
+		global $mysqli, $db_table_prefix;
+		//Update the message in the database
+		$stmt = $mysqli->prepare("UPDATE ".$db_table_prefix."messages
+			SET recipient_id = ?,
+			subject = ?,
+			message = ?,
+			timestamp = ?,
+			draft = ?
+			WHERE
+			id = ?
+			LIMIT 1");
+		$stmt->bind_param("issiii", $recipient_id, $subject, $message, time(), $draft, $message_id);
+		$result = $stmt->execute();
+		$stmt->close();
 		return $result;
 	}
 	

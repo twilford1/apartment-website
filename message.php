@@ -1,7 +1,7 @@
 <?php
 	require_once("models/config.php");
 	
-	if (!securePage($_SERVER['PHP_SELF']))
+	if(!securePage($_SERVER['PHP_SELF']))
 	{
 		die();
 	}
@@ -21,15 +21,95 @@
 	{
 		if(isset($_POST['sendButton']))
 		{
-			newMessage("insert", $message['sender_id'], $message['recipient_id'], "RE: ".$message['subject'], $_POST['body'], 0);
-			header("Location: messages.php?m=inbox");
-			die();	
+			$recipientID = fetchUserID($_POST['recipient']);
+			
+			if(isset($recipientID))
+			{
+				if($_POST['subject'] == "")
+				{
+					$_POST['subject'] = "(no subject)";
+				}
+				
+				if(strlen($_POST['subject']) <= 60)
+				{
+					if($_POST['message'] != "")
+					{
+						if($message['draft'] == 1)
+						{
+							if(updateMessage($message['id'], $recipientID, $_POST['subject'], $_POST['message'], 0))
+							{
+								$successes = [0 => "Message Sent"];
+								$message = fetchMessageDetails($messageId);
+								header("Refresh: 2;url=messages.php?m=inbox");
+							}
+							else
+							{
+								$errors[] = lang("SQL_ERROR");
+							}
+						}
+						else
+						{
+							if(newMessage($loggedInUser->user_id, $message['recipient_id'], "RE: ".$message['subject'], $_POST['message'], 0))
+							{
+								$successes = [0 => "Message Sent"];
+								header("Refresh: 2;url=messages.php?m=inbox");
+							}
+							else
+							{
+								$errors[] = lang("SQL_ERROR");
+							}
+						}
+					}
+					else
+					{
+						$errors = [0 => "Message empty"];
+					}
+				}
+				else
+				{
+					$errors = [0 => "Subject too long"];
+				}				
+			}
+			else
+			{
+				$errors = [0 => "Invalid Recipient"];
+			}
 		}
 		else if(isset($_POST['draftButton']))
 		{
-			newMessage("update", $message['sender_id'], $message['recipient_id'], $message['subject'], $_POST['body'], 1);
-			header("Location: messages.php?m=inbox");
-			die();
+			$recipientID = fetchUserID($_POST['recipient']);
+				
+			if(!isset($recipientID))
+			{
+				$_POST['recipient'] = null;
+			}
+			
+			// If the current message is already a draft, just update
+			// otherwise create a new message for the draft
+			if($message['draft'] == 1)
+			{
+				if(updateMessage($message['id'], $recipientID, $_POST['subject'], $_POST['message'], 1))
+				{
+					$successes = [0 => "Draft Saved"];
+					$message = fetchMessageDetails($messageId);
+				}
+				else
+				{
+					$errors[] = lang("SQL_ERROR");
+				}
+			}
+			else
+			{
+				if(newMessage($loggedInUser->user_id, $recipientID, $_POST['subject'], $_POST['message'], 1))
+				{
+					$successes = [0 => "Draft Saved"];
+					$message = fetchMessageDetails($messageId);
+				}
+				else
+				{
+					$errors[] = lang("SQL_ERROR");
+				}
+			}
 		}
 		else if(isset($_POST['discardButton']))
 		{
@@ -52,6 +132,10 @@
 	}
 	
 	require_once("models/header.php");
+	
+	echo "<center>";
+	echo resultBlock($errors, $successes);
+	echo "</center>";
 	
 	echo "
 	<div class='page-header'>
@@ -92,32 +176,32 @@
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>To:</label>
 								<div class='col-sm-9'>
-									<input type='email' class='form-control' value='".fetchUsername($message['recipient_id'])."'>
+									<input type='text' name='recipient' class='form-control' value='".fetchUsername($message['recipient_id'])."'>
 								</div>
 							</div>
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>From:</label>
 								<div class='col-sm-9'>
-									<input type='email' class='form-control' placeholder='".fetchUsername($message['sender_id'])."' disabled>
+									<input type='text' class='form-control' placeholder='".fetchUsername($message['sender_id'])."' disabled>
 								</div>
 							</div>
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>Subject:</label>
 								<div class='col-sm-9'>
-									<input type='text' class='form-control' value='".$message['subject']."'></input>
+									<input type='text' name='subject' maxlength='60' class='form-control' value='".$message['subject']."'></input>
 								</div>
 							</div>
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>Message:</label>
 								<div class='col-sm-9'>
-									<textarea class='form-control' rows='4'>".$message['message']."</textarea>
+									<textarea name='message' class='form-control' rows='4'>".$message['message']."</textarea>
 								</div>
 							</div>
 							
 							<center>
-								<button type='reset' name='discardButton' class='btn btn-default'>Discard</button>
+								<button type='submit' name='discardButton' class='btn btn-default'>Discard</button>
 								<button type='submit' name='draftButton' class='btn btn-default'>Draft</button>
-								<button type='submit' name='submitButton' class='btn btn-primary'>Send</button>
+								<button type='submit' name='sendButton' class='btn btn-primary'>Send</button>
 							</center>";
 						}
 						else
@@ -126,19 +210,19 @@
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>To:</label>
 								<div class='col-sm-9'>
-									<input type='email' class='form-control' placeholder='".fetchUsername($message['recipient_id'])."' disabled>
+									<input type='text' name='recipient' class='form-control' placeholder='".fetchUsername($message['recipient_id'])."' disabled>
 								</div>
 							</div>
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>From:</label>
 								<div class='col-sm-9'>
-									<input type='email' class='form-control' placeholder='".fetchUsername($message['sender_id'])."' disabled>
+									<input type='text' class='form-control' placeholder='".fetchUsername($message['sender_id'])."' disabled>
 								</div>
 							</div>
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>Subject:</label>
 								<div class='col-sm-9'>
-									<input type='text' class='form-control' placeholder='".$message['subject']."' disabled>
+									<input type='text' name='subject' maxlength='60' class='form-control' placeholder='".$message['subject']."' disabled>
 								</div>
 							</div>
 							<div class='form-group'>
@@ -161,21 +245,11 @@
 							<div class='collapse' id='collapseExample'>			
 								<div class='col-sm-9 col-sm-offset-2'>	
 									<div class='form-group'>
-										<textarea class='form-control' id='message' name='body' rows='4' placeholder='Click here to reply'></textarea>
+										<textarea name='message' class='form-control' id='message' name='body' rows='4' placeholder='Click here to reply'></textarea>
 									</div>
 									
-									<center>";
-										
-										if($message['draft'] == 1)
-										{
-											echo "<button type='submit' name='discardButton' class='btn btn-default'>Draft</button>";
-										}
-										else
-										{
-											echo "<button type='reset' class='btn btn-default' data-toggle='collapse' data-target='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>Discard</button>";
-										}
-										
-										echo "
+									<center>
+										<button type='reset' class='btn btn-default' data-toggle='collapse' data-target='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>Discard</button>
 										<button type='submit' name='draftButton' class='btn btn-default'>Draft</button>
 										<button type='submit' name='sendButton' class='btn btn-primary'>Send</button>
 									</center>
@@ -194,8 +268,6 @@
 		</div>
 				
 	</div>";
-	
-	
-	
+		
 	include 'models/footer.php';
 ?>
