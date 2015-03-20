@@ -48,7 +48,7 @@
 			}
 		}
 		else if(isset($_POST['draftButton']))
-		{	
+		{
 			$recipientID = fetchUserID($_POST['recipient']);
 			
 			if(!isset($recipientID))
@@ -66,6 +66,7 @@
 				if(newMessage($loggedInUser->user_id, $recipientID, $_POST['subject'], $_POST['message'], 1))
 				{
 					$successes = [0 => "Draft Saved"];
+					$_GET['m'] = "drafts";
 				}
 				else
 				{

@@ -19,10 +19,19 @@
 	
 	if(!empty($_POST))
 	{
-		if(isset($_POST['sendButton']))
+		// If the message was sent to you then that means you are
+		// replying, so the new recipient is the old sender
+		if($loggedInUser->user_id == $message['recipient_id'])
+		{
+			$recipientID = fetchUserID($_POST['sender']);
+		}
+		else
 		{
 			$recipientID = fetchUserID($_POST['recipient']);
-			
+		}
+		
+		if(isset($_POST['sendButton']))
+		{
 			if(isset($recipientID))
 			{
 				if($_POST['subject'] == "")
@@ -49,7 +58,7 @@
 						}
 						else
 						{
-							if(newMessage($loggedInUser->user_id, $message['recipient_id'], "RE: ".$message['subject'], $_POST['message'], 0))
+							if(newMessage($loggedInUser->user_id, $recipientID, "RE: ".$message['subject'], $_POST['message'], 0))
 							{
 								$successes = [0 => "Message Sent"];
 								header("Refresh: 2;url=messages.php?m=inbox");
@@ -77,13 +86,6 @@
 		}
 		else if(isset($_POST['draftButton']))
 		{
-			$recipientID = fetchUserID($_POST['recipient']);
-				
-			if(!isset($recipientID))
-			{
-				$_POST['recipient'] = null;
-			}
-			
 			// If the current message is already a draft, just update
 			// otherwise create a new message for the draft
 			if($message['draft'] == 1)
@@ -104,6 +106,7 @@
 				{
 					$successes = [0 => "Draft Saved"];
 					$message = fetchMessageDetails($messageId);
+					header("Refresh: 2;url=messages.php?m=drafts");
 				}
 				else
 				{
@@ -113,9 +116,15 @@
 		}
 		else if(isset($_POST['discardButton']))
 		{
-			deleteMessage($_GET['id']);
-			header("Location: messages.php?m=inbox");
-			die();
+			if(deleteMessage($_GET['id']))
+			{
+				$successes = [0 => "Message Deleted"];
+				header("Refresh: 2;url=messages.php?m=drafts");
+			}
+			else
+			{
+				$errors[] = lang("SQL_ERROR");
+			}
 		}
 	}
 		
@@ -182,7 +191,7 @@
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>From:</label>
 								<div class='col-sm-9'>
-									<input type='text' class='form-control' placeholder='".fetchUsername($message['sender_id'])."' disabled>
+									<input type='text' name='sender' class='form-control' value='".fetchUsername($message['sender_id'])."'>
 								</div>
 							</div>
 							<div class='form-group'>
@@ -200,7 +209,7 @@
 							
 							<center>
 								<button type='submit' name='discardButton' class='btn btn-default'>Discard</button>
-								<button type='submit' name='draftButton' class='btn btn-default'>Draft</button>
+								<button type='submit' name='draftButton' class='btn btn-default'>Save</button>
 								<button type='submit' name='sendButton' class='btn btn-primary'>Send</button>
 							</center>";
 						}
@@ -210,51 +219,55 @@
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>To:</label>
 								<div class='col-sm-9'>
-									<input type='text' name='recipient' class='form-control' placeholder='".fetchUsername($message['recipient_id'])."' disabled>
+									<input type='text' name='recipient' class='form-control' value='".fetchUsername($message['recipient_id'])."'>
 								</div>
 							</div>
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>From:</label>
 								<div class='col-sm-9'>
-									<input type='text' class='form-control' placeholder='".fetchUsername($message['sender_id'])."' disabled>
+									<input type='text' name='sender' class='form-control' value='".fetchUsername($message['sender_id'])."'>
 								</div>
 							</div>
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>Subject:</label>
 								<div class='col-sm-9'>
-									<input type='text' name='subject' maxlength='60' class='form-control' placeholder='".$message['subject']."' disabled>
+									<input type='text' name='subject' maxlength='60' class='form-control' value='".$message['subject']."'>
 								</div>
 							</div>
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>Message:</label>
 								<div class='col-sm-9'>
-									<textarea class='form-control' rows='4' placeholder='".$message['message']."' disabled></textarea>
-								</div>
-							</div>
-							
-							<br>
-							<center>
-								<a class='btn btn-default'>
-									Read
-								</a>
-								<a class='btn btn-primary' data-toggle='collapse' href='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>
-									Reply
-								</a>
-							</center>
-							<br>
-							<div class='collapse' id='collapseExample'>			
-								<div class='col-sm-9 col-sm-offset-2'>	
-									<div class='form-group'>
-										<textarea name='message' class='form-control' id='message' name='body' rows='4' placeholder='Click here to reply'></textarea>
-									</div>
-									
-									<center>
-										<button type='reset' class='btn btn-default' data-toggle='collapse' data-target='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>Discard</button>
-										<button type='submit' name='draftButton' class='btn btn-default'>Draft</button>
-										<button type='submit' name='sendButton' class='btn btn-primary'>Send</button>
-									</center>
+									<textarea class='form-control' rows='4'>".$message['message']."</textarea>
 								</div>
 							</div>";
+							
+							if($loggedInUser->user_id != $message['sender_id'])
+							{
+								echo "
+								<br>
+								<center>
+									<a class='btn btn-default'>
+										Read
+									</a>
+									<a class='btn btn-primary' data-toggle='collapse' href='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>
+										Reply
+									</a>
+								</center>
+								<br>
+								<div class='collapse' id='collapseExample'>			
+									<div class='col-sm-9 col-sm-offset-2'>	
+										<div class='form-group'>
+											<textarea name='message' class='form-control' id='message' name='body' rows='4' placeholder='Click here to reply'></textarea>
+										</div>
+										
+										<center>
+											<button type='reset' class='btn btn-default' data-toggle='collapse' data-target='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>Discard</button>
+											<button type='submit' name='draftButton' class='btn btn-default'>Draft</button>
+											<button type='submit' name='sendButton' class='btn btn-primary'>Send</button>
+										</center>
+									</div>
+								</div>";
+							}
 						}
 						
 					echo "
