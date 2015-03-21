@@ -26,11 +26,16 @@
 					if(isUserLoggedIn())
 					{
 						echo "
-						<li><a href='messages.php?m=inbox'><span class='glyphicon glyphicon-envelope'></span></a></li>
-						<li><a href='account.php'>Account Home</a></li>
-						<li><a href='user_settings.php'>User Settings</a></li>
+						<li class='dropdown'>
+							<a href='#' class='dropdown-toggle' data-toggle='dropdown'>Account<span class='caret'></span></a>
+							<ul class='dropdown-menu' role='menu'>
+								<li><a href='account.php'>Account Home</a></li>
+								<li><a href='messages.php?m=inbox'>Messages</a></li>								
+								<li><a href='user_settings.php'>User Settings</a></li>
+							</ul>
+						</li>
 						<li><a href='apartment_listings.php'>Listings</a></li>
-						<li><a href='landlords_list.php'>Landlords/Property Managers</a></li>
+						<li><a href='landlords_list.php'>Landlords</a></li>
 						<li><a href='map.php'>Map</a></li>";
 						
 						//Links for permission level 2 (default admin)
@@ -67,6 +72,18 @@
 					}
 				?>
 			</ul>
+			
+			<ul class="nav navbar-nav pull-right" id="main-navigation">
+				<form class="navbar-form" role="search" action="apartment_listings.php" method="post">
+					<div class="input-group">
+						<input type="text" name="searchTerms" class="form-control" placeholder="Search">
+						<div class="input-group-btn">
+							<button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+						</div>
+					</div>
+				</form>
+			</ul>
+			
 		</div>
 		<!-- /.navbar-collapse -->
 	</div>
