@@ -16,7 +16,7 @@
 	$userdetails = fetchUserDetails(NULL, NULL, $userId); //Fetch user details
 	//Forms posted
 	if(!empty($_POST))
-	{	
+	{
 		//Delete selected account
 		if(!empty($_POST['delete']))
 		{
@@ -24,6 +24,7 @@
 			if ($deletion_count = deleteUsers($deletions))
 			{
 				$successes[] = lang("ACCOUNT_DELETIONS_SUCCESSFUL", array($deletion_count));
+				header("Refresh: 2;url=admin_users.php");
 			}
 			else
 			{

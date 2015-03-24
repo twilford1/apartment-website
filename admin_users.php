@@ -22,64 +22,77 @@
 	
 	require_once("models/header.php");
 	
-	echo "<center>";
-	echo resultBlock($errors, $successes);
 	echo "
-	<div style='width:800px;'>
-		<h2>Admin Users</h2>
-		
-		<form name='adminUsers' action='".$_SERVER['PHP_SELF']."' method='post'>
-			<table class='table table-striped'>
-				<thead>
-					<tr>
-						<th>Delete</th>
-						<th>Username</th>
-						<th>Display Name</th>
-						<th>Title</th>
-						<th>Last Sign In</th>
-					</tr>
-				</thead>
-				<tbody>";
-					//Cycle through users
-					foreach ($userData as $v1)
-					{
-						echo "
+	<div class='page-header'>
+		<h1>Admin Users</h1>
+	</div>
+	<center>";
+	
+	echo resultBlock($errors, $successes);
+	echo "	
+		<div style='width:800px;'>
+			<form name='adminUsers' action='".$_SERVER['PHP_SELF']."' method='post'>
+				<table id='grid-selection' class='table table-striped'>
+					<thead>
 						<tr>
-							<td>
-								<input type='checkbox' name='delete[".$v1['id']."]' id='delete[".$v1['id']."]' value='".$v1['id']."'>
-							</td>
-							<td>
-								<a href='admin_user.php?id=".$v1['id']."'>".$v1['user_name']."</a>
-							</td>
-							<td>
-								".$v1['display_name']."
-							</td>
-							<td>
-								".$v1['title']."
-							</td>
-							<td>";
-								//Interprety last login
-								if ($v1['last_sign_in_stamp'] == '0')
-								{
-									echo "Never";	
-								}
-								else
-								{
-									echo date("j M, Y", $v1['last_sign_in_stamp']);
-								}
+							<th data-column-id='id' data-type='numeric' data-identifier='true'>Delete</th>
+							<th data-column-id='username'>Username</th>
+							<th data-column-id='display-name'>Display Name</th>
+							<th data-column-id='title'>Title</th>
+							<th data-column-id='last-sign-in'>Last Sign In</th>
+						</tr>
+					</thead>
+					<tbody>";
+						//Cycle through users
+						foreach ($userData as $v1)
+						{
 							echo "
-							</td>
-						</tr>";
-					}
-				
-				echo "
-				</tbody>
-			</table>
+							<tr>
+								<td>
+									".$v1['id']."
+									<!--
+									<input type='checkbox' name='delete[".$v1['id']."]' id='delete[".$v1['id']."]' value='".$v1['id']."'>
+									-->
+								</td>
+								<td>
+									<a href='admin_user.php?id=".$v1['id']."'>".$v1['user_name']."</a>
+								</td>
+								<td>
+									".$v1['display_name']."
+								</td>
+								<td>
+									".$v1['title']."
+								</td>
+								<td>";
+									//Interprety last login
+									if ($v1['last_sign_in_stamp'] == '0')
+									{
+										echo "Never";	
+									}
+									else
+									{
+										echo date("j M, Y", $v1['last_sign_in_stamp']);
+									}
+								echo "
+								</td>
+							</tr>";
+						}
 					
-			<input type='submit' name='Submit' value='Delete' class='btn btn-primary' style='max-width:200px;'/>
-		</form>
-	</div>";
-	echo "</center>";
+					echo "
+					</tbody>
+				</table>
+						
+				<input type='submit' name='Submit' value='Delete' class='btn btn-primary' style='max-width:200px;'/>
+			</form>
+		</div>
+	
+	</center>
+	
+	<script>
+		$(document).ready(function(){
+			//$('#grid-selection').bootgrid();
+		});
+	</script>";
 	
 	include 'models/footer.php';
 ?>

@@ -12,6 +12,6 @@
 <h1>Apartment Listings TEST</h1>
 	<h3>Welcome!</h3>
 	
-<?php
+<?php	
 	include 'models/footer.php';
 ?>

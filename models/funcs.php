@@ -1213,23 +1213,26 @@
 			
 		if($search != null)
 		{
-			$terms = explode(" ", $search);
-			$rowLength = count($row);
-			
-			for($i = 0; $i < $rowLength; $i++)
+			if(isset($row))
 			{
-				$matchFound = false;
-				foreach($terms as $t)
-				{
-					if(contains($row[$i]['name'], $t) || contains($row[$i]['address'], $t) || contains($row[$i]['description'], $t))
-					{
-						$matchFound = true;
-					}
-				}
+				$terms = explode(" ", $search);
+				$rowLength = count($row);
 				
-				if($matchFound == false)
+				for($i = 0; $i < $rowLength; $i++)
 				{
-					unset($row[$i]);
+					$matchFound = false;
+					foreach($terms as $t)
+					{
+						if(contains($row[$i]['name'], $t) || contains($row[$i]['address'], $t) || contains($row[$i]['description'], $t))
+						{
+							$matchFound = true;
+						}
+					}
+					
+					if($matchFound == false)
+					{
+						unset($row[$i]);
+					}
 				}
 			}
 		}

@@ -9,6 +9,18 @@
 	if(empty($_POST))
 	{
 		$_POST['searchTerms'] = null;
+		$searchTitle = "";
+	}
+	else
+	{
+		if($_POST['searchTerms'] != "")
+		{
+			$searchTitle = ": ".$_POST['searchTerms'];
+		}
+		else
+		{
+			$searchTitle = "";
+		}
 	}
 	
 	$listings = fetchListings($_POST['searchTerms']);
@@ -18,7 +30,7 @@
 	echo "
 	<center>
 	<div style='width:800px;'>
-		<h2>Apartment Listings</h2>
+		<h2>Apartment Listings".$searchTitle."</h2>
 		<br>
 		<div class='table-responsive'>
 			<table class='table table-striped'>

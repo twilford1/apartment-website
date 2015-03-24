@@ -42,53 +42,65 @@
 	$dbpages = fetchAllPages();
 	require_once("models/header.php");
 	
-	echo "
+	echo "	
+	<div class='page-header'>
+		<h1>Pages</h1>
+	</div>
+	
 	<center>
-	<div style='width:500px;'>
-		<h2>Pages</h2>
-		
-		<form name='adminUsers' action='".$_SERVER['PHP_SELF']."' method='post'>
-			<table class='table table-striped'>
-				<thead>
-					<tr>
-						<th>Id</th>
-						<th>Page</th>
-						<th>Access</th>
-					</tr>
-				</thead>
-				<tbody>";
-					//Display list of pages
-					foreach ($dbpages as $page)
-					{
-						echo "
-						<tr>
-							<td>
-								".$page['id']."
-							</td>
-							<td>
-								<a href ='admin_page.php?id=".$page['id']."'>".$page['page']."</a>
-							</td>
-							
-							<td>";
-								//Show public/private setting of page
-								if($page['private'] == 0)
-								{
-									echo "Public";
-								}
-								else
-								{
-									echo "Private";	
-								}
-								
+		<div style='width:600px;'>
+			<div class='table-responsive'>
+				<form name='adminUsers' action='".$_SERVER['PHP_SELF']."' method='post'>
+					<table id='grid-basic' class='table table-striped'>
+						<thead>
+							<tr>
+								<th data-column-id='id' data-type='numeric' data-order='asc'>Id</th>
+								<th data-column-id='page' data-formatter='link' data-sortable='false'>Page</th>
+								<th data-column-id='access'>Access</th>
+							</tr>
+						</thead>
+						<tbody>";
+							//Display list of pages
+							foreach ($dbpages as $page)
+							{
 								echo "
-							</td>
-						</tr>";
-					}
-				echo "
-				</tbody>
-			</table>
-		</div>
-	</center>";
+								<tr>
+									<td>
+										".$page['id']."
+									</td>
+									<td>
+										<a href ='admin_page.php?id=".$page['id']."'>".$page['page']."</a>
+									</td>
+									
+									<td>";
+										//Show public/private setting of page
+										if($page['private'] == 0)
+										{
+											echo "Public";
+										}
+										else
+										{
+											echo "Private";	
+										}
+										
+										echo "
+									</td>
+								</tr>";
+							}
+						echo "
+						</tbody>
+					</table>
+				</form>
+			</div>
+		</div>	
+	</center>
+	
+	<script>
+		$(document).ready(function(){
+			$('#grid-basic').bootgrid();
+		});
+	</script>
+	";
 	
 	include 'models/footer.php';
 ?>

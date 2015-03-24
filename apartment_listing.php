@@ -27,7 +27,7 @@
 	echo resultBlock($errors, $successes);
 	echo "
 	<center>
-		<h2>Apartment Listing</h2>
+		<h2>Apartment Listing".count($aptDetails)."</h2>
 	</center>
 	<br>
 	<div class='srtgs'  id='rt_".$aptId."'></div>
@@ -96,8 +96,10 @@
 				</div>
 			</div>
 		</div>
-	</div>
+	</div>";
 	
+	/*
+	echo "
 	<br>
 	<br>
 	<br>
@@ -181,7 +183,10 @@
         </footer>
 
     </div>
+	";
+	*/
 	
+	echo "
 	<script src='ratingfiles/ratings.js' type='text/javascript'></script>";
 	
 	include 'models/footer.php';

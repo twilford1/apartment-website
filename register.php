@@ -5,12 +5,14 @@
 	{
 		die();
 	}
+	
 	//Prevent the user visiting the logged in page if he/she is already logged in
 	if(isUserLoggedIn())
 	{
 		header("Location: account.php");
 		die();
 	}
+	
 	//Forms posted
 	if(!empty($_POST))
 	{
@@ -21,6 +23,7 @@
 		$password = trim($_POST["password"]);
 		$confirm_pass = trim($_POST["passwordc"]);
 		$captcha = md5($_POST["captcha"]);
+		
 		
 		if ($captcha != $_SESSION['captcha'])
 		{
@@ -38,7 +41,7 @@
 		{
 			$errors[] = lang("ACCOUNT_DISPLAY_CHAR_LIMIT", array(5, 25));
 		}
-		if(!ctype_alnum($displayname))
+		if(!ctype_alnum(preg_replace('/\s+/', '', $displayname)))
 		{
 			$errors[] = lang("ACCOUNT_DISPLAY_INVALID_CHARACTERS");
 		}
@@ -82,6 +85,7 @@
 			$successes[] = $user->success;
 		}
 	}
+	
 	require_once("models/header.php");
 	
 	echo "<center>";

@@ -14,6 +14,10 @@
 		
 		<script type="text/javascript" src="models/funcs.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+		
+		<link rel="stylesheet" href="models/jquery.bootgrid.css"></style>
+		<script type="text/javascript" src="models/jquery.bootgrid.js"></script>
+
 		<script type="text/javascript" src="models/bootstrap.js"></script>
 		
 		<!-- Added by Mattie for Google Maps -->
