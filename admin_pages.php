@@ -96,22 +96,6 @@
 			</div>
 		</div>	
 	</center>";
-	
-	/*
-	echo "	
-	<script>
-		$('#grid-basic').bootgrid({
-			url: '/api/data/basic',
-			formatters: {
-				'link': function(column, row)
-				{
-					return '<a href=\'#\'>' + column.id + ': ' + row.id + '</a>';
-				}
-			}
-		});
-	</script>
-	";
-	*/
 ?>
 
 <script>

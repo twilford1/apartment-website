@@ -1758,4 +1758,93 @@
 			return ($row);
 		}
 	}
+	
+	//Retrieve js limited information for all users
+	function jsFetchAllUsers()
+	{
+		global $mysqli,$db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			id,
+			user_name
+			FROM ".$db_table_prefix."users");
+		$stmt->execute();
+		$stmt->bind_result($id, $user);
+		$i = 0;
+		while ($stmt->fetch())
+		{
+			$row[$i++] = array('id' => $id, 'user_name' => $user);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	//Retrieve the apartment listings for the given search term
+	function jsFetchListings($search = null)
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			apartment_id,
+			name,
+			address,
+			latitude,
+			longitude,
+			num_bedrooms,
+			num_bathrooms,
+			landlord_id,
+			price,
+			deposit,
+			description,
+			status,
+			last_updated
+			FROM ".$db_table_prefix."apartments");
+		$stmt->execute();
+		$stmt->bind_result($apartment_id, $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('apartment_id' => $apartment_id, 'name' => $name, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'num_bedrooms' => $num_bedrooms, 'num_bathrooms' => $num_bathrooms, 'landlord_id' => $landlord_id, 'price' => $price, 'deposit' => $deposit, 'description' => $description, 'status' => $status, 'last_updated' => $last_updated);
+		}
+		$stmt->close();
+			
+		if($search != null)
+		{
+			if(isset($row))
+			{
+				$terms = explode(" ", $search);
+				$rowLength = count($row);
+				
+				for($i = 0; $i < $rowLength; $i++)
+				{
+					$matchFound = false;
+					foreach($terms as $t)
+					{
+						if(contains($row[$i]['name'], $t) || contains($row[$i]['address'], $t) || contains($row[$i]['description'], $t))
+						{
+							$matchFound = true;
+						}
+					}
+					
+					if($matchFound == false)
+					{
+						unset($row[$i]);
+					}
+				}
+			}
+		}
+		
+		// Strip off all fields but the apartment id field
+		if(isset($row))
+		{
+			foreach ($row as $r)
+			{
+				$modifiedRow[] = array('apartment_id' => $r['apartment_id'], 'address' => $r['address']);
+			}
+		}
+		else
+		{
+			$modifiedRow = null;
+		}
+		
+		return ($modifiedRow);
+	}
 ?>

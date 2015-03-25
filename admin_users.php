@@ -8,6 +8,13 @@
 	//Forms posted
 	if(!empty($_POST))
 	{
+		//error_log("Forms posted");
+		error_log("type: ".gettype($_POST['select']));
+		foreach($_POST['select'] as $d)
+		{
+			error_log();
+		}
+		/*
 		$deletions = $_POST['delete'];
 		if ($deletion_count = deleteUsers($deletions))
 		{
@@ -17,6 +24,7 @@
 		{
 			$errors[] = lang("SQL_ERROR");
 		}
+		*/
 	}
 	$userData = fetchAllUsers(); //Fetch information for all users
 	
@@ -35,21 +43,22 @@
 				<table id='grid-selection' class='table table-striped'>
 					<thead>
 						<tr>
-							<th data-column-id='id' data-type='numeric' data-identifier='true'>Delete</th>
-							<th data-column-id='username'>Username</th>
+							<th data-column-id='id' data-type='numeric' data-order='asc' data-identifier='true'>Delete</th>
+							<th data-column-id='username' data-formatter='link'>Username</th>
 							<th data-column-id='display-name'>Display Name</th>
 							<th data-column-id='title'>Title</th>
 							<th data-column-id='last-sign-in'>Last Sign In</th>
 						</tr>
 					</thead>
 					<tbody>";
+						$i = 1;
 						//Cycle through users
 						foreach ($userData as $v1)
 						{
 							echo "
 							<tr>
 								<td>
-									".$v1['id']."
+									".$i++."
 									<!--
 									<input type='checkbox' name='delete[".$v1['id']."]' id='delete[".$v1['id']."]' value='".$v1['id']."'>
 									-->
@@ -86,13 +95,27 @@
 			</form>
 		</div>
 	
-	</center>
-	
-	<script>
-		$(document).ready(function(){
-			//$('#grid-selection').bootgrid();
-		});
-	</script>";
-	
+	</center>";
+?>
+
+<script>
+	<?php
+		$php_array = jsFetchAllUsers();
+		echo "var users = ".json_encode($php_array).";\n";
+	?>
+	$("#grid-selection").bootgrid({
+		url: "/api/data/basic",
+		selection: true,
+		multiSelect: true,
+		formatters: {
+			"link": function(column, row)
+			{
+				return "<a href='admin_user.php?id=" + users[row.id - 1]['id'] + "'>" + users[row.id - 1]['user_name'] + "</a>";
+			}
+		}
+	});
+</script>
+
+<?php
 	include 'models/footer.php';
 ?>
