@@ -1,5 +1,5 @@
 <?php
-
+	require_once("models/funcs.php");
 	/*
 	 * Test class for messages.php and message.php
 	 * functions in func.php

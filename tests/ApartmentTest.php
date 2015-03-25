@@ -1,5 +1,5 @@
 <?php
-
+	require_once("models/funcs.php");
 	/*
 	 * Test class for apartment_listings.php and apartment_listing.php
 	 * functions in func.php

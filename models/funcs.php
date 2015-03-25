@@ -1736,4 +1736,26 @@
 		$stmt->close();
 		return ($total);
 	}
+	
+	//Fetch js limited information on all pages
+	function jsFetchAllPages()
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			id,
+			page
+			FROM ".$db_table_prefix."pages");
+		$stmt->execute();
+		$stmt->bind_result($id, $page);
+		$i = 0;
+		while ($stmt->fetch())
+		{
+			$row[$i++] = array('id' => $id, 'page' => $page);
+		}
+		$stmt->close();
+		if(isset($row))
+		{
+			return ($row);
+		}
+	}
 ?>

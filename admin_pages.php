@@ -5,6 +5,7 @@
 	{
 		die();
 	}
+	
 	$pages = getPageFiles(); //Retrieve list of pages in root usercake folder
 	$dbpages = fetchAllPages(); //Retrieve list of pages in pages table
 	$creations = array();
@@ -51,22 +52,23 @@
 		<div style='width:600px;'>
 			<div class='table-responsive'>
 				<form name='adminUsers' action='".$_SERVER['PHP_SELF']."' method='post'>
-					<table id='grid-basic' class='table table-striped'>
+					<table id='grid-basic' class='table table-hover table-striped'>
 						<thead>
 							<tr>
-								<th data-column-id='id' data-type='numeric' data-order='asc'>Id</th>
-								<th data-column-id='page' data-formatter='link' data-sortable='false'>Page</th>
+								<th data-column-id='id' data-type='numeric' data-order='asc' data-identifier='true'>Index</th>
+								<th data-column-id='page' data-formatter='link'>Page</th>
 								<th data-column-id='access'>Access</th>
 							</tr>
 						</thead>
 						<tbody>";
+							$i = 1;
 							//Display list of pages
 							foreach ($dbpages as $page)
 							{
 								echo "
 								<tr>
 									<td>
-										".$page['id']."
+										".$i++."
 									</td>
 									<td>
 										<a href ='admin_page.php?id=".$page['id']."'>".$page['page']."</a>
@@ -93,14 +95,41 @@
 				</form>
 			</div>
 		</div>	
-	</center>
+	</center>";
 	
+	/*
+	echo "	
 	<script>
-		$(document).ready(function(){
-			$('#grid-basic').bootgrid();
+		$('#grid-basic').bootgrid({
+			url: '/api/data/basic',
+			formatters: {
+				'link': function(column, row)
+				{
+					return '<a href=\'#\'>' + column.id + ': ' + row.id + '</a>';
+				}
+			}
 		});
 	</script>
 	";
-	
+	*/
+?>
+
+<script>
+	<?php
+		$php_array = jsFetchAllPages();
+		echo "var pages = ".json_encode($php_array).";\n";
+	?>
+	$("#grid-basic").bootgrid({
+		url: "/api/data/basic",
+		formatters: {
+			"link": function(column, row)
+			{
+				return "<a href='admin_page.php?id=" + pages[row.id - 1]['id'] + "'>" + pages[row.id - 1]['page'] + "</a>";
+			}
+		}
+	});
+</script>
+
+<?php
 	include 'models/footer.php';
 ?>
