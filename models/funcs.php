@@ -1688,6 +1688,21 @@
 		return $result;
 	}
 	
+	//Read all message for a user
+	function readAllMessages($userID)
+	{
+		global $mysqli, $db_table_prefix;
+		$stmt = $mysqli->prepare("UPDATE ".$db_table_prefix."messages
+			SET wasRead = 1
+			WHERE
+			recipient_id = ?
+			");
+		$stmt->bind_param("i", $userID);
+		$result = $stmt->execute();
+		$stmt->close();
+		return $result;
+	}
+	
 	//Check if a message ID exists in the DB
 	function messageIdExists($id)
 	{
@@ -1846,5 +1861,59 @@
 		}
 		
 		return ($modifiedRow);
+	}
+	
+	//Retrieve all the user's sent messages with limited info
+	function jsFetchMessages($user_id, $mailbox)
+	{
+		switch ($mailbox)
+		{
+			case "inbox":
+				$column = "recipient_id";
+				break;
+			case "sent":
+				$column = "sender_id";
+				break;
+			case "drafts":
+				$column = "sender_id";
+				break;
+			default:
+				return null;
+		}
+		
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			id,
+			draft
+			FROM ".$db_table_prefix."messages
+			WHERE
+			$column = ?
+			");
+			$stmt->bind_param("i", $user_id);
+		$stmt->execute();
+		$stmt->bind_result($id, $draft);
+		while ($stmt->fetch())
+		{
+			if($mailbox == "drafts")
+			{
+				if($draft == 1)
+				{
+					$row[] = array('id' => $id);
+				}
+			}
+			else if($mailbox == "sent")
+			{
+				if($draft != 1)
+				{
+					$row[] = array('id' => $id);
+				}
+			}
+			else
+			{
+				$row[] = array('id' => $id);
+			}
+		}
+		$stmt->close();
+		return ($row);
 	}
 ?>

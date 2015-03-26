@@ -209,7 +209,7 @@
 					
 					echo ": ".date("M d, Y - g:i:s A", $message['timestamp'])."</p></h4>
 					<br>
-					<form class='form-horizontal' action='".$_SERVER['PHP_SELF']."?id=".$_GET['id']."' method='post' role='form'>";	
+					<form class='form-horizontal' action='".$_SERVER['PHP_SELF']."?id=".$_GET['id']."' method='post' role='form' id='message-form'>";	
 						
 						if($message['draft'] == 1)
 						{
@@ -240,7 +240,7 @@
 							</div>
 							
 							<center>
-								<button type='submit' name='discardButton' class='btn btn-default'>Discard</button>
+								<button type='submit' name='discardButton' class='btn btn-default' onclick='confirmDelete(this.form);'>Discard</button>
 								<button type='submit' name='draftButton' class='btn btn-default'>Save</button>
 								<button type='submit' name='sendButton' class='btn btn-primary'>Send</button>
 							</center>";
@@ -313,6 +313,16 @@
 		</div>
 				
 	</div>";
-		
+?>
+
+<script>
+	function confirmDelete(form) {
+		if (confirm("Are you sure you want to delete this draft?")) {
+			form.submit();
+		}
+	}
+</script>
+
+<?php	
 	include 'models/footer.php';
 ?>

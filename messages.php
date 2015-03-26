@@ -124,6 +124,7 @@
 	echo resultBlock($errors, $successes);
 	echo "</center>";
 	
+	/*
 	echo "
 	
 	<div class='page-header'>
@@ -317,36 +318,10 @@
 		</div>
 	</div>";
 			
-			
-			
-			
-			
-			
-		
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		
-			
-			
+	*/		
 			
 			
 	echo "
-	<br>
-	<br>
 	<div class='page-header'>
 		<div class='row'>
 			<div class='col-md-2'>
@@ -367,7 +342,7 @@
 					</button>
 					<ul class='dropdown-menu' role='menu'>
 						<li><a data-toggle='modal' data-target='#modalCompose'>Compose new</a></li>
-						<li><a class='text-muted'>Mark All Read</a></li>
+						<li><a href='mark_messages.php?id=".$loggedInUser->user_id."' class='text-muted'>Mark All Read</a></li>
 						<li><a href='user_settings.php' class='text-muted'>Settings</a></li>
 					</ul>
 				</div>
@@ -397,6 +372,7 @@
 					<table id='grid-basic' class='table table-striped table-hover'>
 						<thead class='hidden-xs'>
 							<tr>
+								<th data-column-id='id' data-type='numeric' data-identifier='true'>ID</th>
 								<td data-column-id='date_time' data-order='desc'>Date / Time</td>
 								<td data-column-id='sender_recipient'>".$tableHeader."</td>";
 								
@@ -439,6 +415,9 @@
 								echo "
 								<tr>
 									<td>
+										".$i++."
+									</td>
+									<td>
 										<span>".$b1.date("Y M d - g:i:s A", $m['timestamp']).$b2."</span>
 									</td>
 									<td>
@@ -479,6 +458,9 @@
 							{
 								echo "
 								<tr>
+									<td>
+										-
+									</td>
 									<td>
 										-
 									</td>
@@ -543,16 +525,15 @@
 
 <script>
 	<?php
-		$php_array = jsFetchAllPages();
-		//pages[row.id - 1]['id']
-		echo "var pages = ".json_encode($php_array).";\n";
+		$php_array = jsFetchMessages($loggedInUser->user_id, $_GET['m']);
+		echo "var messages = ".json_encode($php_array).";\n";
 	?>
 	$("#grid-basic").bootgrid({
 		url: "/api/data/basic",
 		formatters: {
 			"link": function(column, row)
 			{
-				return "<a href='message.php?id=" + 1 + "' class='btn btn-xs btn-primary'>View</a>";
+				return "<a href='message.php?id=" + messages[row.id - 1]['id'] + "' class='btn btn-xs btn-primary'>View</a>";
 			}
 		}
 	});
