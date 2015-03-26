@@ -17,95 +17,133 @@
 	
 	$message = fetchMessageDetails($messageId);
 	
+	//Check if the logged in user is either the sender or recipient
+	if($message['sender_id'] != $loggedInUser->user_id && $message['recipient_id'] != $loggedInUser->user_id)
+	{
+		header("Location: messages.php?m=inbox");
+		die();	
+	}
+	
 	if(!empty($_POST))
 	{
-		// If the message was sent to you then that means you are
-		// replying, so the new recipient is the old sender
-		if($loggedInUser->user_id == $message['recipient_id'])
+		// If the toggle read button was pressed then only update the read value
+		if(isset($_POST['toggleRead']))
 		{
-			$recipientID = fetchUserID($_POST['sender']);
+			// If the message has not been read then read it, otherwise
+			// unread the message
+			if($message['wasRead'] == 0)
+			{
+				toggleMessageRead($message['id'], 1);
+			}
+			else
+			{
+				toggleMessageRead($message['id'], 0);
+			}
+			
+			$message = fetchMessageDetails($messageId);
 		}
 		else
 		{
-			$recipientID = fetchUserID($_POST['recipient']);
-		}
-		
-		if(isset($_POST['sendButton']))
-		{
-			if(isset($recipientID))
+			// If the message was sent to you then that means you are
+			// replying, so the new recipient is the old sender
+			if($loggedInUser->user_id == $message['recipient_id'])
 			{
-				if($_POST['subject'] == "")
+				$recipientID = fetchUserID($_POST['sender']);
+			}
+			else
+			{
+				$recipientID = fetchUserID($_POST['recipient']);
+			}
+			
+			if(isset($_POST['sendButton']))
+			{
+				if(isset($recipientID))
 				{
-					$_POST['subject'] = "(no subject)";
-				}
-				
-				if(strlen($_POST['subject']) <= 60)
-				{
-					if($_POST['message'] != "")
+					if($_POST['subject'] == "")
 					{
-						if($message['draft'] == 1)
+						$_POST['subject'] = "(no subject)";
+					}
+					
+					if(strlen($_POST['subject']) <= 60)
+					{
+						if($_POST['message'] != "")
 						{
-							if(updateMessage($message['id'], $recipientID, $_POST['subject'], $_POST['message'], 0))
+							if($message['draft'] == 1)
 							{
-								$successes = [0 => "Message Sent"];
-								$message = fetchMessageDetails($messageId);
-								header("Refresh: 2;url=messages.php?m=inbox");
+								if(updateMessage($message['id'], $recipientID, $_POST['subject'], $_POST['message'], 0))
+								{
+									$successes = [0 => "Message Sent"];
+									$message = fetchMessageDetails($messageId);
+									header("Refresh: 2;url=messages.php?m=inbox");
+								}
+								else
+								{
+									$errors[] = lang("SQL_ERROR");
+								}
 							}
 							else
 							{
-								$errors[] = lang("SQL_ERROR");
+								if(newMessage($loggedInUser->user_id, $recipientID, "RE: ".$message['subject'], $_POST['message'], 0))
+								{
+									$successes = [0 => "Message Sent"];
+									header("Refresh: 2;url=messages.php?m=inbox");
+								}
+								else
+								{
+									$errors[] = lang("SQL_ERROR");
+								}
 							}
 						}
 						else
 						{
-							if(newMessage($loggedInUser->user_id, $recipientID, "RE: ".$message['subject'], $_POST['message'], 0))
-							{
-								$successes = [0 => "Message Sent"];
-								header("Refresh: 2;url=messages.php?m=inbox");
-							}
-							else
-							{
-								$errors[] = lang("SQL_ERROR");
-							}
+							$errors = [0 => "Message empty"];
 						}
 					}
 					else
 					{
-						$errors = [0 => "Message empty"];
+						$errors = [0 => "Subject too long"];
+					}				
+				}
+				else
+				{
+					$errors = [0 => "Invalid Recipient"];
+				}
+			}
+			else if(isset($_POST['draftButton']))
+			{
+				// If the current message is already a draft, just update
+				// otherwise create a new message for the draft
+				if($message['draft'] == 1)
+				{
+					if(updateMessage($message['id'], $recipientID, $_POST['subject'], $_POST['message'], 1))
+					{
+						$successes = [0 => "Draft Saved"];
+						$message = fetchMessageDetails($messageId);
+					}
+					else
+					{
+						$errors[] = lang("SQL_ERROR");
 					}
 				}
 				else
 				{
-					$errors = [0 => "Subject too long"];
-				}				
-			}
-			else
-			{
-				$errors = [0 => "Invalid Recipient"];
-			}
-		}
-		else if(isset($_POST['draftButton']))
-		{
-			// If the current message is already a draft, just update
-			// otherwise create a new message for the draft
-			if($message['draft'] == 1)
-			{
-				if(updateMessage($message['id'], $recipientID, $_POST['subject'], $_POST['message'], 1))
-				{
-					$successes = [0 => "Draft Saved"];
-					$message = fetchMessageDetails($messageId);
-				}
-				else
-				{
-					$errors[] = lang("SQL_ERROR");
+					if(newMessage($loggedInUser->user_id, $recipientID, $_POST['subject'], $_POST['message'], 1))
+					{
+						$successes = [0 => "Draft Saved"];
+						$message = fetchMessageDetails($messageId);
+						header("Refresh: 2;url=messages.php?m=drafts");
+					}
+					else
+					{
+						$errors[] = lang("SQL_ERROR");
+					}
 				}
 			}
-			else
+			else if(isset($_POST['discardButton']))
 			{
-				if(newMessage($loggedInUser->user_id, $recipientID, $_POST['subject'], $_POST['message'], 1))
+				if(deleteMessage($_GET['id']))
 				{
-					$successes = [0 => "Draft Saved"];
-					$message = fetchMessageDetails($messageId);
+					$successes = [0 => "Message Deleted"];
 					header("Refresh: 2;url=messages.php?m=drafts");
 				}
 				else
@@ -114,30 +152,24 @@
 				}
 			}
 		}
-		else if(isset($_POST['discardButton']))
-		{
-			if(deleteMessage($_GET['id']))
-			{
-				$successes = [0 => "Message Deleted"];
-				header("Refresh: 2;url=messages.php?m=drafts");
-			}
-			else
-			{
-				$errors[] = lang("SQL_ERROR");
-			}
-		}
-	}
-		
-	//Check if the logged in user is either the sender or recipient
-	if($message['sender_id'] != $loggedInUser->user_id && $message['recipient_id'] != $loggedInUser->user_id)
-	{
-		header("Location: messages.php?m=inbox");
-		die();	
 	}
 	
+	// Mark message read by from viewing
+	if($message['wasRead'] == 0 && !isset($_POST['toggleRead']))
+	{
+		toggleMessageRead($message['id'], 1);
+		$message = fetchMessageDetails($messageId);
+	}
+	
+	// 1 - default == read
+	// 0 - primary == not read
 	if($message['wasRead'] == 0)
 	{
-		readMessage($message['id']);
+		$toggleReadLabel = "btn btn-primary";
+	}
+	else
+	{
+		$toggleReadLabel = "btn btn-default";
 	}
 	
 	require_once("models/header.php");
@@ -246,11 +278,11 @@
 								echo "
 								<br>
 								<center>
-									<a class='btn btn-default'>
-										Read
-									</a>
+									<button type='submit' name='toggleRead' class='".$toggleReadLabel."'>
+										<span class='glyphicon glyphicon-envelope'></span>
+									</button>
 									<a class='btn btn-primary' data-toggle='collapse' href='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>
-										Reply
+										<span class='glyphicon glyphicon-pencil'></span>
 									</a>
 								</center>
 								<br>

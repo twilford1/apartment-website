@@ -1673,16 +1673,16 @@
 	}
 	
 	//Read a message
-	function readMessage($id)
+	function toggleMessageRead($id, $toggle)
 	{
 		global $mysqli, $db_table_prefix;
 		$stmt = $mysqli->prepare("UPDATE ".$db_table_prefix."messages
-			SET wasRead = 1
+			SET wasRead = ?
 			WHERE
 			id = ?
 			LIMIT 1
 			");
-		$stmt->bind_param("i", $id);
+		$stmt->bind_param("ii", $toggle, $id);
 		$result = $stmt->execute();
 		$stmt->close();
 		return $result;
