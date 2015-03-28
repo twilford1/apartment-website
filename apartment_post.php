@@ -9,7 +9,7 @@
 	// create apartment 
 	function createApartment($name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status)
 	{
-		error_log("name - ".$name." - ".gettype($name));
+		/*error_log("name - ".$name." - ".gettype($name));
 		error_log("address - ".$address." - ".gettype($address));
 		error_log("latitude - ".$latitude." - ".gettype($latitude));
 		error_log("longitude - ".$longitude." - ".gettype($longitude));
@@ -19,7 +19,7 @@
 		error_log("price - ".$price." - ".gettype($price));
 		error_log("deposit - ".$deposit." - ".gettype($deposit));
 		error_log("description - ".$description." - ".gettype($description));
-		error_log("status - ".$status." - ".gettype($status));
+		error_log("status - ".$status." - ".gettype($status));*/
 		
 		global $mysqli, $db_table_prefix; 
 		$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."apartments (
@@ -34,7 +34,7 @@
 			deposit,
 			description,
 			status,
-			last_updated,
+			last_updated
 			)
 			VALUES (
 			?,
@@ -52,15 +52,15 @@
 			)");
 			
 			
-		if (!$stmt)
+		/*if (!$stmt)
 		{
 			error_log("STMT ERROR!!!!!!!!!!");
-			error_log($mysqli->errorInfo());
+			
 		}
 		else
 		{
 			error_log("STMT prepared correctly");
-		}
+		}*/
 
 		$stmt->bind_param("ssddiiiddss", $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status); // s for string i for integer 
 		$result = $stmt->execute();
@@ -78,46 +78,26 @@
 		$num_bathrooms = (int)$_POST["num_bathrooms"];
 		$price = (double)$_POST["price"];
 		$description = trim($_POST["description"]);
-		/*
-		if(minMaxRange(5, 25, $username))
-		{
-			$errors[] = lang("ACCOUNT_USER_CHAR_LIMIT", array(5, 25));
-		}
-		if(!ctype_alnum($username))
-		{
-			$errors[] = lang("ACCOUNT_USER_INVALID_CHARACTERS");
-		}
-		if(minMaxRange(5, 25, $displayname))
-		{
-			$errors[] = lang("ACCOUNT_DISPLAY_CHAR_LIMIT", array(5, 25));
-		}
-		if(!ctype_alnum($displayname))
-		{
-			$errors[] = lang("ACCOUNT_DISPLAY_INVALID_CHARACTERS");
-		}
-		if(minMaxRange(8, 50, $password) && minMaxRange(8, 50, $confirm_pass))
-		{
-			$errors[] = lang("ACCOUNT_PASS_CHAR_LIMIT", array(8, 50));
-		}
-		else if($password != $confirm_pass)
-		{
-			$errors[] = lang("ACCOUNT_PASS_MISMATCH");
-		}
-		if(!isValidEmail($email))
-		{
-			$errors[] = lang("ACCOUNT_INVALID_EMAIL");
-		}*/
 		
-		$apartment = createApartment($name, $address, NULL, NULL, $num_bedrooms, $num_bathrooms, 1,NULL, NULL, $description, "available");
+		if(minMaxRange(5, 25, $name))
+		{
+			$errors[] = lang("PROPERTY_CHAR_LIMIT", array(5, 25));
+		}
+		if(!ctype_alnum($name))
+		{
+			$errors[] = lang("PROPERTY_INVALID_CHARACTERS");
+		}
 		//End data validation
-		/*if(true)count($errors) == 0)
+
+		//$apartment = createApartment($name, $address, NULL, NULL, $num_bedrooms, $num_bathrooms, 1,$price, NULL, $description, "available");
+		
+		if(count($errors) == 0)
 		{	
-			//Construct a user object
-			//***************$user = new User($username, $displayname, $password, $email);
-			//$apartment = createApartment($name, $address, null, null, $num_bedrooms, $num_bathrooms, null, $price, $deposit, $description, null, null);
+			//Construct an apartment object
+			$apartment = createApartment($name, $address, NULL, NULL, $num_bedrooms, $num_bathrooms, 1,$price, NULL, $description, "available");
 			
 			//Checking this flag tells us whether there were any errors such as possible data duplication occured
-			if(!$user->status)
+			/*if(!$user->status)
 			{
 				if($user->username_taken) $errors[] = lang("ACCOUNT_USERNAME_IN_USE", array($username));
 				if($user->displayname_taken) $errors[] = lang("ACCOUNT_DISPLAYNAME_IN_USE", array($displayname));
@@ -131,11 +111,11 @@
 					if($user->mail_failure) $errors[] = lang("MAIL_ERROR");
 					if($user->sql_failure)  $errors[] = lang("SQL_ERROR");
 				}
-			} 
-		}*/
-		if(!isempty($apartment))//count($errors) == 0)
+			} */
+		}
+		if(!empty($apartment))
 		{
-			$successes[] = $apartment->success;
+			$successes[] = lang("PROPERTY_ADDED");
 		}
 		
 		
@@ -152,7 +132,7 @@
 		<form class='form-horizontal' name='newApartment' action='' method='post'>
 			<div class='form-group'>
 				<div class='col-sm-offset-3 col-sm-9'>
-					<h2>Post Property</h2>
+					<h2>Post Properties</h2>
 				</div>
 			</div>
 			<div class='form-group'>
@@ -183,7 +163,7 @@
 			<div class='form-group'>
 				<label class='col-sm-3 control-label'>Price</label>
 				<div class='col-sm-9'>
-					<input type='number' class='form-control' name='price' min='0' placeholder='$0.00'>
+					<input type='number' class='form-control' name='price' min='0' max='10000' placeholder='$0.00'>
 				</div>
 			</div>
 
@@ -191,7 +171,7 @@
 			<div class='form-group'>
 				<label class='col-sm-4 control-label'>Description</label>
 				<div class='col-sm-8'>
-					<textarea class='form-control' name='description' rows='2' placeholder='Description about your property' ></textarea>
+					<textarea class='form-control' name='description' rows='5' maxlength='500' placeholder='Description about your property' ></textarea>
 				</div>
 			</div>
 

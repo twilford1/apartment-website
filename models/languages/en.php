@@ -80,7 +80,21 @@ $lang = array_merge($lang,array(
 	"MAIL_TEMPLATE_DIRECTORY_ERROR"		=> "Unable to open mail-templates directory. Perhaps try setting the mail directory to %m1%",
 	"MAIL_TEMPLATE_FILE_EMPTY"		=> "Template file is empty... nothing to send",
 	));
+	
+//Property
+$lang = array_merge($lang,array(
+	"PROPERTY_ADDED"        => "Property added successfully",
+	"PROPERTY_CHAR_LIMIT"		=> "Your property name must be between %m1% and %m2% characters in length",
+	"PROPERTY_INVALID_CHARACTERS"	=> "Property names can only include alpha-numeric characters",
+	));
 
+// Image
+$lang = array_merge($lang,array(
+	"IMAGE_UPLOADED"        => "Image uploaded successfully",
+	"IMAGE_INVALID_TYPE"  => "The selected file is not an image",
+	"IMAGE_UPLOADED_FAILED"  => "Image uploading failed",
+	));	
+	
 //Miscellaneous
 $lang = array_merge($lang,array(
 	"CAPTCHA_FAIL"				=> "Failed security question",

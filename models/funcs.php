@@ -1182,6 +1182,76 @@
 			}
 		}
 	}
+	
+	//Retrieve the apartment listings for the given search term
+	//*************NEEDED FOR MAP.PHP!!!****************
+	function fetchListingsWithTerms($terms = NULL)
+	{
+		if($terms != NULL)
+		{
+			// TODO custom search results
+			
+			// Return all listings with limit
+			if(isset($terms['limit']))
+			{
+				global $mysqli, $db_table_prefix; 
+				$stmt = $mysqli->prepare("SELECT 
+					apartment_id,
+					name,
+					address,
+					latitude,
+					longitude,
+					num_bedrooms,
+					num_bathrooms,
+					landlord_id,
+					price,
+					deposit,
+					description,
+					status,
+					last_updated
+					FROM ".$db_table_prefix."apartments 
+					LIMIT ".$terms['limit']);
+				$stmt->execute();
+				$stmt->bind_result($apartment_id, $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated);
+				
+				while ($stmt->fetch())
+				{
+					$row[] = array('apartment_id' => $apartment_id, 'name' => $name, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'num_bedrooms' => $num_bedrooms, 'num_bathrooms' => $num_bathrooms, 'landlord_id' => $landlord_id, 'price' => $price, 'deposit' => $deposit, 'description' => $description, 'status' => $status, 'last_updated' => $last_updated);
+				}
+				$stmt->close();
+				return ($row);
+			}
+		}
+		else
+		{
+			// Return all listings
+			global $mysqli, $db_table_prefix; 
+			$stmt = $mysqli->prepare("SELECT 
+				apartment_id,
+				name,
+				address,
+				latitude,
+				longitude,
+				num_bedrooms,
+				num_bathrooms,
+				landlord_id,
+				price,
+				deposit,
+				description,
+				status,
+				last_updated
+				FROM ".$db_table_prefix."apartments");
+			$stmt->execute();
+			$stmt->bind_result($apartment_id, $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated);
+			
+			while ($stmt->fetch())
+			{
+				$row[] = array('apartment_id' => $apartment_id, 'name' => $name, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'num_bedrooms' => $num_bedrooms, 'num_bathrooms' => $num_bathrooms, 'landlord_id' => $landlord_id, 'price' => $price, 'deposit' => $deposit, 'description' => $description, 'status' => $status, 'last_updated' => $last_updated);
+			}
+			$stmt->close();
+			return ($row);
+		}
+	}
 
 	//Retrieve the apartment listings for the given search term
 	function fetchListings($search = null)
@@ -1290,7 +1360,7 @@
 	function fetchIowaCityApartments($radius = NULL, $limit = 20)
 	{
 		$terms = array("limit"=>$limit);
-		$result = fetchListings($terms);
+		$result = fetchListingsWithTerms($terms);
 		
 		//check if apartments have latitude and longitude values yet
 		foreach($result as $apartment)
@@ -1439,6 +1509,72 @@
 		{
 			return NULL;
 		}
+	}
+	
+	//Fetches a user's favorite listings using their user id
+	function fetchFavorites($user_id)
+	{
+		// Return all favorites for this user
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+            apartment_id,
+			name,
+			address,
+			latitude,
+			longitude,
+			num_bedrooms,
+			num_bathrooms,
+			landlord_id,
+			price,
+			deposit,
+			description,
+			status,
+			last_updated
+			FROM (SELECT 
+			apartment_id
+			FROM ".$db_table_prefix."favorites
+			WHERE user_id = ?) as table1 NATURAL JOIN ".$db_table_prefix."apartments");
+		$stmt->bind_param("i", $user_id);
+		$stmt->execute();
+		$stmt->bind_result($apartment_id, $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('apartment_id' => $apartment_id, 'name' => $name, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'num_bedrooms' => $num_bedrooms, 'num_bathrooms' => $num_bathrooms, 'landlord_id' => $landlord_id, 'price' => $price, 'deposit' => $deposit, 'description' => $description, 'status' => $status, 'last_updated' => $last_updated);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	//Add a new favorite for the user and apartment specified
+	function addFavorite($user_id, $apartment_id)
+	{
+		global $mysqli, $db_table_prefix;
+		//Insert the message into the database
+		$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."favorites (
+			user_id,
+			apartment_id
+			)
+			VALUES (
+			?,
+			?
+			)");		
+		$stmt->bind_param("ii", $user_id, $apartment_id);
+		$result = $stmt->execute();
+		$stmt->close();	
+		return $result;
+	}
+	
+	//Delete the specified favorite
+	function deleteFavorite($user_id, $apartment_id)
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("DELETE FROM ".$db_table_prefix."favorites 
+			WHERE user_id = ? AND apartment_id = ?");
+		$stmt->bind_param("ii", $user_id, $apartment_id);
+		$result = $stmt->execute();
+		$stmt->close();
+		return $result;
 	}
 	
 	//Retrieve the landlords for the given search term
