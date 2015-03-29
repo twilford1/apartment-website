@@ -1637,6 +1637,50 @@
 		return ($row);
 	}
 	
+	//Get all of the users who currently owe the specified user
+	function fetchAllDebtors($user_id)
+	{
+		// Return all debtors for this user
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT DISTINCT cost_payer_id
+		    FROM (SELECT 
+			cost_payer_id
+			FROM ".$db_table_prefix."costs
+			WHERE cost_payee_id = ? AND cost_recieved = false) AS table1");
+		$stmt->bind_param("i", $user_id);
+		$stmt->execute();
+		$stmt->bind_result($cost_payer_id);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('cost_payer_id' => $cost_payer_id);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	//Get all of the users who are currently owed by the specified user
+	function fetchAllPayees($user_id)
+	{
+		// Return all debts for this user
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT DISTINCT cost_payee_id
+		    FROM (SELECT 
+			cost_payee_id
+			FROM ".$db_table_prefix."costs
+			WHERE cost_payer_id = ? AND cost_recieved = false) AS table1");
+		$stmt->bind_param("i", $user_id);
+		$stmt->execute();
+		$stmt->bind_result($cost_payee_id);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('cost_payee_id' => $cost_payee_id);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
 	//Delete specified costs
 	function deleteCost($cost_id)
 	{
