@@ -1577,6 +1577,107 @@
 		return $result;
 	}
 	
+	//Get costs which the user owes
+	function fetchDebtCosts($user_id)
+	{
+		// Return all debts for this user
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT *
+			FROM ".$db_table_prefix."costs
+			WHERE cost_payer_id = ? AND (cost_recieved = false OR cost_delivered = false)");
+		$stmt->bind_param("i", $user_id);
+		$stmt->execute();
+		$stmt->bind_result($cost_id, $cost_description, $cost_payer_id, $cost_payee_id, $cost_due_date, $cost_delivered, $cost_recieved, $cost_amount);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('cost_id' => $cost_id, 'cost_description' => $cost_description, 'cost_payer_id' => $cost_payer_id, 'cost_payee_id' => $cost_payee_id, 'cost_due_date' => $cost_due_date, 'cost_delivered' => $cost_delivered, 'cost_recieved' => $cost_recieved, 'cost_amount' => $cost_amount);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	//Get costs which the user is owed
+	function fetchOwedCosts($user_id)
+	{
+		// Return all debts for this user
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT *
+			FROM ".$db_table_prefix."costs
+			WHERE cost_payee_id = ? AND (cost_recieved = false OR cost_delivered = false)");
+		$stmt->bind_param("i", $user_id);
+		$stmt->execute();
+		$stmt->bind_result($cost_id, $cost_description, $cost_payer_id, $cost_payee_id, $cost_due_date, $cost_delivered, $cost_recieved, $cost_amount);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('cost_id' => $cost_id, 'cost_description' => $cost_description, 'cost_payer_id' => $cost_payer_id, 'cost_payee_id' => $cost_payee_id, 'cost_due_date' => $cost_due_date, 'cost_delivered' => $cost_delivered, 'cost_recieved' => $cost_recieved, 'cost_amount' => $cost_amount);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	//Get complete costs for the user
+	function fetchCompleteCosts($user_id)
+	{
+		// Return all debts for this user
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT *
+			FROM ".$db_table_prefix."costs
+			WHERE (cost_payer_id = ? OR cost_payee_id = ?) AND (cost_recieved = true AND cost_delivered = true)");
+		$stmt->bind_param("ii", $user_id, $user_id);
+		$stmt->execute();
+		$stmt->bind_result($cost_id, $cost_description, $cost_payer_id, $cost_payee_id, $cost_due_date, $cost_delivered, $cost_recieved, $cost_amount);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('cost_id' => $cost_id, 'cost_description' => $cost_description, 'cost_payer_id' => $cost_payer_id, 'cost_payee_id' => $cost_payee_id, 'cost_due_date' => $cost_due_date, 'cost_delivered' => $cost_delivered, 'cost_recieved' => $cost_recieved, 'cost_amount' => $cost_amount);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	//Delete specified costs
+	function deleteCost($cost_id)
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("DELETE FROM ".$db_table_prefix."costs 
+			WHERE cost_id = ?");
+		$stmt->bind_param("i", $cost_id);
+		$result = $stmt->execute();
+		$stmt->close();
+		return $result;
+	}
+	
+	//Add specified cost
+	function addCost($description, $payer_id, $payee_id, $due_date, $delivered, $recieved, $amount)
+	{
+		global $mysqli, $db_table_prefix;
+		//Insert the message into the database
+		$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."costs (
+			cost_description,
+			cost_payer_id,
+			cost_payee_id,
+			cost_due_date,
+			cost_delivered,
+			cost_recieved,
+			cost_amount
+			)
+			VALUES (
+			?,
+			?,
+			?,
+			?,
+			?,
+			?,
+			?
+			)");		
+		$stmt->bind_param("siisiid", $description, $payer_id, $payee_id, $due_date, $delivered, $recieved, $amount);
+		$result = $stmt->execute();
+		$stmt->close();	
+		return $result;
+	}
+	
 	//Retrieve the landlords for the given search term
 	function fetchLandlords($terms = NULL)
 	{

@@ -28,15 +28,37 @@ if (!securePage($_SERVER['PHP_SELF']))
 //limit to 50 results
 $apartments = fetchIowaCityApartments(20, 50);
 
+$loggedIn = false;
+
 //Check if user is logged in
 if(isUserLoggedIn())
 {
+	$loggedIn = true;
+	
 	//get the user's favorite apartments if logged in
     $favorites = fetchFavorites($loggedInUser->user_id);
-}
-else
-{
-	$favorites = NULL;
+	
+	//for each favorite
+	foreach ($favorites as $favorite)
+	{
+		$i;
+		
+		//check if the favorite is in $apartments
+		for ($i=0; $i < count($apartments); $i++)
+		{
+			if($favorite.apartment_id == $apartment.apartment_id)
+			{
+				break;
+			}
+		}
+		
+		//if not, add the favorite to $apartments
+		if($i == count($apartments))
+		{
+			array_push($apartments, $favorite);
+			$apartments[$i][fave] = true;
+		}
+	}
 }
 
 //echo the javascript and html code below
@@ -45,35 +67,7 @@ echo "
 		//use a geocoder object to convert addresses to latitude and longitude
 		var geocoder = new google.maps.Geocoder();
 		var apartments = ".json_encode($apartments).";
-		var favorites = ".json_encode($favorites).";";
-		
-		//if there exist favorites
-		if($favorites != NULL)
-		{
-			//for each favorite
-			foreach ($favorites as $favorite)
-			{
-				$i;
-				
-				//check if the favorite is in $apartments
-				for ($i=0; $i < count($apartments); $i++)
-				{
-					if($favorite.apartment_id == $apartment.apartment_id)
-					{
-						break;
-					}
-				}
-				
-				//if not, add the favorite to $apartments
-				if($i == count($apartments))
-				{
-					array_push($apartments, $favorite);
-					$apartments[$i][fave] = true;
-				}
-			}
-		}
-		
-		echo "var map;
+		var map;
 		var coordinates = new Array();
 		var markers = new Array();
 		var stars = [
@@ -113,14 +107,9 @@ echo "
 			  
 			  //check if the current apartment is a favorite
 			  var fave = false;
-			  if(favorites != null)
+			  if('fave' in apartments[i])
 			  {
-				fave = favorites.indexOf(apartments[i]) > -1;
-				
-				if(fave)
-				{
-					favorites = favorites.splice(favorites.indexOf(apartments[i]), 1);
-				}
+				  fave = true;
 			  }
 			  
 			  //if there is a longitude and latitude
@@ -137,35 +126,6 @@ echo "
 			  
 			  //extend the bounds of the map for each new marker
 			  bounds.extend(new google.maps.LatLng(apartments[i].latitude, apartments[i].longitude));
-		  }
-		  
-		  //cycle through remaining favorites
-		  for(var i=0; i < favorites.length; i++)
-		  {
-			  description = \"<html><body><h3>\"+favorites[i].name+\"</h3><h4>\"+favorites[i].address+\"</h4>\"
-					  +\"<ul><li>\"+favorites[i].status+\" (updated \"+favorites[i].last_updated+\")</li><li>\"+
-					  favorites[i].num_bedrooms+\" bedrooms, \"+favorites[i].num_bathrooms+\" bathrooms</li><li>\"+
-					  \"$\"+favorites[i].price+\" per month</li><li>Landlord ID: \"+favorites[i].landlord_id+
-					  \"</li></ul><p>\"+favorites[i].description+\"</p>\"+
-					  \"<p><a href='/apartment_listing.php?id=\"+favorites[i].apartment_id+\"' target='_blank'>\"+
-					  \"More info about this location</a></p></body></html>\";
-					  
-			  address = favorites[i].address;
-			  
-			  //if there is a longitude and latitude
-			  if(favorites[i].longitude != null && favorites[i].latitude != null)
-			  {
-				  //create marker for apartment
-				  createMarkerLatLng(favorites[i].latitude, favorites[i].longitude, description, address, true, favorites[i].apartment_id);
-			  }
-			  //otherwise use the address
-			  else
-			  {
-				  createMarkerAddr(address, description, address, true, favorites[i].apartment_id);
-			  }
-			  
-			  //extend the bounds of the map for each new marker
-			  bounds.extend(new google.maps.LatLng(favorites[i].latitude, favorites[i].longitude));
 		  }
 		  
 		  //change the zoom-level of the map to fit all of the markers
@@ -186,7 +146,7 @@ echo "
 					map.setCenter(results[0].geometry.location);
 					
 					//create a marker for the location
-					//createMarkerAddr(address, \"Hi I'm a placeholder for actual apartment info!<br><a href='apartment.krakenshell.com/apartment_listing.php' target='_blank'>More info about this location</a>\", address);
+					createMarkerAddr(address, address, address, null, false, 'red');
 				} 
 				else 
 				{
@@ -206,7 +166,7 @@ echo "
 			 });
 
 			 var marker = new google.maps.Marker({
-				icon: (!fave) ? 'http://maps.google.com/mapfiles/ms/icons/red-dot.png':'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+				icon: (!fave) ? 'http://maps.google.com/mapfiles/ms/icons/ltblue-dot.png':'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
 				position: latlng,
 				map: map,
 				title: titleString
@@ -220,7 +180,7 @@ echo "
 	   }
 	   
 	   //creates a marker with an info window that appears when the marker is clicked
-	   function createMarkerAddr(address, contentString, titleString, id, fave, id)
+	   function createMarkerAddr(address, contentString, titleString, id, fave, color)
 	   {
 		   geocoder.geocode( { 'address': address}, function(results, status)
 			{
@@ -232,13 +192,16 @@ echo "
 					 });
 
 					 var marker = new google.maps.Marker({
-						icon: (!fave) ? 'http://maps.google.com/mapfiles/ms/icons/red-dot.png':'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+						icon: 'http://maps.google.com/mapfiles/ms/icons/'+ color +'-dot.png',
 						position: results[0].geometry.location,
 						map: map,
 						title: titleString
 					 });
 					 
-					 markers.push({marker: marker, id: id});
+					 if(id != null)
+					 {
+						markers.push({marker: marker, id: id});
+					 }
 					 
 					 google.maps.event.addListener(marker, 'click', function() {
 						infowindow.open(map,marker);
@@ -256,13 +219,13 @@ echo "
 	   function changeStar(id) 
 	   {
 		   //if the user is logged in
-		   if(".isUserLoggedIn().")
+		   if(".json_encode($loggedIn).")
 		   {
 			   //get the image to be changed
 			   var temp = document.getElementById(id).src;
 			   
 			   //remove the excess from the string
-			   temp = temp.replace(\"http://www.apartment.duckdns.org\", \"\");
+			   temp = temp.substring(temp.indexOf('/models'));
 			   
 			   //change the image
 			   document.getElementById(id).src = stars[(stars.indexOf(temp)+1)%2];
@@ -281,7 +244,7 @@ echo "
 				   {
 					   if(markers[i].id == id)
 					   {
-						   markers[i].marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png');
+						   markers[i].marker.setIcon('http://maps.google.com/mapfiles/ms/icons/yellow-dot.png');
 						   break;
 					   }
 				   }
@@ -297,7 +260,7 @@ echo "
 				   {
 					   if(markers[i].id == id)
 					   {
-						   markers[i].marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
+						   markers[i].marker.setIcon('http://maps.google.com/mapfiles/ms/icons/ltblue-dot.png');
 						   break;
 					   }
 				   }
@@ -310,8 +273,8 @@ echo "
 			<div class=\"col-md-12 column\">
 			    <div class=\"page-header\">
 					<h1>
-						Map <br><small>The map below shows Iowa City apartment listings in red"
-						.(!isUserLoggedIn() ? ".<br>Log in to view your favorites listings in blue." : " and your favorites in blue.").
+						Map <br><small>The map below shows Iowa City apartment listings in blue"
+						.(!isUserLoggedIn() ? ".<br>Log in to view your favorites listings in yellow." : " and your favorites in yellow.").
 								"</small>
 					</h1>
 				</div>
@@ -434,4 +397,7 @@ echo "
 			</div>
 		</div>
 	</div>";
+	
+	//require the page containing the db information, etc
+    require_once("models/footer.php");
 	?>
