@@ -32,7 +32,21 @@ if(!empty($_POST))
 	$due_date = $_POST["date_due"];
 	$payee_id = $loggedInUser->user_id;
 	$description = $_POST["description"];
-	$delete = $POST['delete'];
+	$delete = $_POST['delete'];
+	$update = $_POST['update'];
+	
+	//update a specified cost
+	if(isset($update) && isset($update['cost_id']))
+	{
+		if(isset($update['delivered']))
+		{
+			(updateCost($update['cost_id'],fetchCostById($update['cost_id'])[0]['cost_recieved'], $update['delivered']));
+		}
+		else if(isset($update['recieved']))
+		{
+			updateCost($update['cost_id'],$update['recieved'],fetchCostById($update['cost_id'])[0]['cost_delivered']);
+		}
+	}
 	
 	//add a new cost if appropriate
 	if($amount && $payer_id && $payee_id && $description)
@@ -140,59 +154,6 @@ for($j=0; $j<count($payees); $j++)
 	}
 }
 
-/*
-Please consider that the JS part isn't production ready at all, I just code it to show the concept of merging filters and titles together !
-*/
-/*
-echo "
-<script>
-$(document).ready(function(){
-    $('.filterable .btn-filter').click(function(){
-        var $panel = $(this).parents('.filterable'),
-        $filters = $panel.find('.filters input'),
-        $tbody = $panel.find('.table tbody');
-        if ($filters.prop('disabled') == true) {
-            $filters.prop('disabled', false);
-            $filters.first().focus();
-        } else {
-            $filters.val('').prop('disabled', true);
-            $tbody.find('.no-result').remove();
-            $tbody.find('tr').show();
-        }
-    });
-
-    $('.filterable .filters input').keyup(function(e){
-        //Ignore tab key
-        var code = e.keyCode || e.which;
-        if (code == '9') return;
-        //Useful DOM data and selectors
-        var $input = $(this),
-        inputContent = $input.val().toLowerCase(),
-        $panel = $input.parents('.filterable'),
-        column = $panel.find('.filters th').index($input.parents('th')),
-        $table = $panel.find('.table'),
-        $rows = $table.find('tbody tr');
-        //Dirtiest filter function ever ;)
-        var $filteredRows = $rows.filter(function(){
-            var value = $(this).find('td').eq(column).text().toLowerCase();
-            return value.indexOf(inputContent) === -1;
-        });
-        //Clean previous no-result if exist
-        $table.find('tbody .no-result').remove();
-        //Show all rows, hide filtered ones (never do that outside of a demo ! xD)
-        $rows.show();
-        $filteredRows.hide();
-        //Prepend no-result row if all rows are filtered
-        if ($filteredRows.length === $rows.length) {
-            $table.find('tbody').prepend($('<tr class="no-result text-center"><td colspan="'+ $table.find('.filters th').length +'">No result found</td></tr>'));
-        }
-    });
-});
-</script>";*/
-
-//make the javascript for the page
-echo '';
-
 //make the html for the page
 echo '
 <div class="container" width="100%">
@@ -228,18 +189,17 @@ echo '
 													<table class="table">
 														<thead>
 															<tr class="filters">
-																<form name=\'addCost\' class=\'form-horizontal\' action="'.$_SERVER['PHP_SELF'].'" method=\'post\'>
-																	<th>Amount</th>
-																	<th>Description</th>
-																	<th>Paid By</th>
-																	<th>Date Due</th>
-																	<th>Delivered?</th>
-																	<th>Recieved?</th>
-																	<th></th>
-																</form>
+																<th>Amount</th>
+																<th>Description</th>
+																<th>Paid By</th>
+																<th>Date Due</th>
+																<th>Delivered?</th>
+																<th>Recieved?</th>
+																<th></th>
 															</tr>
 														</thead>
-														<tbody>';
+														<tbody>
+															<form name=\'updateCostRecieved\' class=\'form-horizontal\' action="'.$_SERVER['PHP_SELF'].'" method=\'post\'>';
 														
 														foreach($payee_cost as $cost)
 														{
@@ -248,13 +208,17 @@ echo '
 																 '</td><td>'. fetchUsername($cost[cost_payer_id]) .
 																 '</td><td>'. (($cost[cost_due_date] != NULL) ? $cost[cost_due_date] : 'None') .
 																 '</td><td>'. (($cost[cost_delivered] == 1) ? 'yes' : 'no') .
-																 '</td><td>'. (($cost[cost_recieved] == 1) ? 'yes' : 'no') .
+																 '</td><td>'. (($cost[cost_recieved] == 1) ? 'yes' : ($cost[cost_delivered] == 1) ? '<select name="update[recieved]">
+																																						<option value=true>yes</option>
+																																						<option value=false>no</option>
+																																					 </select><br><br>
+																																					 <button type=\'submit\' class=\'btn btn-primary\' value ='.$cost[cost_id].' name="update[cost_id]">Update</button>' : 'no') .
 																 '<td></td></td></tr>';
 														}
 													
 													$today=getdate(date("U"));
 											
-													echo'
+													   echo'</form>
 															<form name=\'addCost\' class=\'form-horizontal\' action="'.$_SERVER['PHP_SELF'].'" method=\'post\'>
 																<th><input type="text" class="form-control" placeholder="0.00" name="amount"></th>
 																<th><input type="text" class="form-control" placeholder="Description" name="description"></th>
@@ -296,19 +260,24 @@ echo '
 																<th>Recieved?</th>
 															</tr>
 														</thead>
-														<tbody>';
+														<tbody>
+														<form name=\'updateCostDelivered\' class=\'form-horizontal\' action="'.$_SERVER['PHP_SELF'].'" method=\'post\'>';
 														foreach($payer_cost as $cost)
 														{
 															echo '<tr><td>$'. $cost[cost_amount] . 
 																 '</td><td>'. $cost[cost_description] .
 																 '</td><td>'. fetchUsername($cost[cost_payee_id]) .
 																 '</td><td>'. (($cost[cost_due_date] != NULL) ? $cost[cost_due_date] : 'None') .
-																 '</td><td>'. (($cost[cost_delivered] == 1) ? 'yes' : 'no') .
+																 '</td><td>'. (($cost[cost_delivered] == 1) ? 'yes' : '<select name="update[delivered]">
+																															<option value=true>yes</option>
+																															<option value=false>no</option>
+																														 </select><br><br>
+																														 <button type=\'submit\' class=\'btn btn-primary\' value ='.$cost[cost_id].' name="update[cost_id]">Update</button>') .
 																 '</td><td>'. (($cost[cost_recieved] == 1) ? 'yes' : 'no') .
 																 '<td></td></td></tr>';
 														}
 														
-													echo'</tbody>
+													echo'</form></tbody>
 													</table>
 												</div>
 											</div>
@@ -391,6 +360,7 @@ echo '
 											</ul>
 										</div>
 									</div>
+								</div>
 								</div>
 							</div>
 						";

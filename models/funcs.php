@@ -1637,6 +1637,25 @@
 		return ($row);
 	}
 	
+	function fetchCostById($cost_id)
+	{
+		// Return all debts for this user
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT *
+			FROM ".$db_table_prefix."costs
+			WHERE cost_id = ?");
+		$stmt->bind_param("i", $cost_id);
+		$stmt->execute();
+		$stmt->bind_result($cost_id, $cost_description, $cost_payer_id, $cost_payee_id, $cost_due_date, $cost_delivered, $cost_recieved, $cost_amount);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('cost_id' => $cost_id, 'cost_description' => $cost_description, 'cost_payer_id' => $cost_payer_id, 'cost_payee_id' => $cost_payee_id, 'cost_due_date' => $cost_due_date, 'cost_delivered' => $cost_delivered, 'cost_recieved' => $cost_recieved, 'cost_amount' => $cost_amount);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
 	//Get all of the users who currently owe the specified user
 	function fetchAllDebtors($user_id)
 	{
@@ -1719,6 +1738,22 @@
 		$stmt->bind_param("siisiid", $description, $payer_id, $payee_id, $due_date, $delivered, $recieved, $amount);
 		$result = $stmt->execute();
 		$stmt->close();	
+		return $result;
+	}
+	
+	//
+	function updateCost($cost_id, $recieved = false, $delivered = false)
+	{
+		global $mysqli, $db_table_prefix;
+		//Update the cost in the database
+		$stmt = $mysqli->prepare("UPDATE ".$db_table_prefix."costs
+			SET cost_recieved = ?,
+			cost_delivered = ?
+			WHERE cost_id = ?
+			LIMIT 1");
+		$stmt->bind_param("iii", $recieved, $delivered, $cost_id);
+		$result = $stmt->execute();
+		$stmt->close();
 		return $result;
 	}
 	

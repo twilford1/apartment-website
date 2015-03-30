@@ -27,7 +27,7 @@
 	echo resultBlock($errors, $successes);
 	echo "
 	<center>
-		<h2>Apartment Listing".count($aptDetails)."</h2>
+		<h2>Apartment Listing</h2>
 	</center>
 	<br>
 	<div class='srtgs'  id='rt_".$aptId."'></div>
