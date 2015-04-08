@@ -6,68 +6,6 @@
 		die();
 	}
 		
-	// create apartment 
-	function createApartment($name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status)
-	{
-		/*error_log("name - ".$name." - ".gettype($name));
-		error_log("address - ".$address." - ".gettype($address));
-		error_log("latitude - ".$latitude." - ".gettype($latitude));
-		error_log("longitude - ".$longitude." - ".gettype($longitude));
-		error_log("num_bedrooms - ".$num_bedrooms." - ".gettype($num_bedrooms));
-		error_log("num_bathrooms - ".$num_bathrooms." - ".gettype($num_bathrooms));
-		error_log("landlord_id - ".$landlord_id." - ".gettype($landlord_id));
-		error_log("price - ".$price." - ".gettype($price));
-		error_log("deposit - ".$deposit." - ".gettype($deposit));
-		error_log("description - ".$description." - ".gettype($description));
-		error_log("status - ".$status." - ".gettype($status));*/
-		
-		global $mysqli, $db_table_prefix; 
-		$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."apartments (
-			name,
-			address,
-			latitude,
-			longitude,
-			num_bedrooms,
-			num_bathrooms,
-			landlord_id,
-			price,
-			deposit,
-			description,
-			status,
-			last_updated
-			)
-			VALUES (
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			'".time()."'
-			)");
-			
-			
-		/*if (!$stmt)
-		{
-			error_log("STMT ERROR!!!!!!!!!!");
-			
-		}
-		else
-		{
-			error_log("STMT prepared correctly");
-		}*/
-
-		$stmt->bind_param("ssddiiiddss", $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status); // s for string i for integer 
-		$result = $stmt->execute();
-		$stmt->close();	
-		return $result;
-	}
-	
 	//Forms posted
 	if(!empty($_POST))
 	{

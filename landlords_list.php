@@ -82,6 +82,7 @@
 				</tbody>
 			</table>
 			<a href='apartment_post.php' class='btn btn-primary'>Post Properties</a>
+			<a href='image_upload.php' class='btn btn-primary'>Upload Images</a>
 		</div>
 	</center>";
 	

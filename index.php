@@ -42,7 +42,7 @@
 		
 		<div class='jumbotron' style='background-color: #fff;'>
 			<center>
-				<h1>Apartment Finder Test</h1>
+				<h1>IC Apartments Test</h1>
 
 				<p class='lead'>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet.</p>
 

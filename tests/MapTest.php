@@ -167,8 +167,7 @@ class MapTest extends PHPUnit_Framework_TestCase
 	}
 }
 
-/************************MAP FUNCTIONS***********************************/
-	
+/************************MAP FUNCTIONS (w/out db)***********************************/
 //Fetches apartments in a certain radius of Iowa City for the map.php page
 function fetchIowaCityApartments($radius = NULL, $limit = 20)
 {

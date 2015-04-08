@@ -5,19 +5,20 @@
 	 * functions in func.php
 	 *
 	 *Functions to test:
-	 *	-fetchListings
-	 *	-fetchListingDetails
+	 *	-createApartment
+	 *  -fetchApartmentID
+	 *  -deleteApartment
 	 */
 	 
 	class ApartmentPostTest extends PHPUnit_Framework_TestCase
 	{	
-		/*public function testFetchListings()
+		public function testCreateApartment()
 		{
-			$listings = fetchListings(null);
+			$test_apartment = createApartment("TESTAPT", "603 S. Dodge St, Iowa City, 52242", NULL, NULL, 1, 1, 1,999, NULL, "TEST", "available");
 			
 			$result = true;
 			
-			if(!isset($listings))
+			if(!isset($test_apartment))
 			{
 				$result = false;
 			}
@@ -25,19 +26,25 @@
 			$this->assertTrue($result);
 		}
 		
-		public function testFetchListingDetails()
+		public function test_FetchApartmentID_DeleteApartment()
 		{
-			$aptDetails = fetchListingDetails(1);
+			$aptID = fetchApartmentID("TESTAPT");
 			
 			$result = true;
 			
-			if(!isset($aptDetails) || count($aptDetails) != 13 || $aptDetails['name'] != "Lantern Park")
+			if(!isset($aptID))
+			{
+				$result = false;
+			}
+			
+			$apt_delete = deleteApartment($aptID);
+			if(!isset($apt_delete))
 			{
 				$result = false;
 			}
 			
 			$this->assertTrue($result);
-		}*/
+		}
 	}
 
 ?>

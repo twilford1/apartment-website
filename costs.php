@@ -93,6 +93,11 @@ for($i=0; $i<count($roommates); $i++)
 	$roommates[$i][debts] = fetchDebtCosts($roommates[$i][cost_payer_id]);
 	
 	$roommates[$i][debt_total] = 0;
+	$roommates[$i][owed] = 0;		
+	$roommates[$i][owed_total] = 0;
+	$roommates[$i][recieved_total] = 0;
+	$roommates[$i][paid_total] = 0;
+	$roommates[$i][user_id] = $roommates[$i][cost_payer_id];
 	
 	foreach($roommates[$i][debts] as $debt)
 	{	
@@ -120,6 +125,7 @@ for($j=0; $j<count($payees); $j++)
 	
 	$payees[$j][recieved_total] = 0;
 	$payees[$j][paid_total] = 0;
+	$payees[$j][debt_total] = 0;
 	
 	foreach($complete_cost as $cost)
 	{
@@ -149,7 +155,8 @@ for($j=0; $j<count($payees); $j++)
 	
 	//if the roommate is not also a debtor
 	if($i == count($roommates))
-	{		
+	{	
+		$payees[$j][user_id] = $payees[$j][cost_payee_id];
 		array_push($roommates, $payees[$j]);
 	}
 }
@@ -209,11 +216,11 @@ echo '
 																 '</td><td>'. (($cost[cost_due_date] != NULL) ? $cost[cost_due_date] : 'None') .
 																 '</td><td>'. (($cost[cost_delivered] == 1) ? 'yes' : 'no') .
 																 '</td><td>'. (($cost[cost_recieved] == 1) ? 'yes' : ($cost[cost_delivered] == 1) ? '<select name="update[recieved]">
-																																						<option value=true>yes</option>
-																																						<option value=false>no</option>
+																																						<option value=1>yes</option>
+																																						<option value=0>no</option>
 																																					 </select><br><br>
 																																					 <button type=\'submit\' class=\'btn btn-primary\' value ='.$cost[cost_id].' name="update[cost_id]">Update</button>' : 'no') .
-																 '<td></td></td></tr>';
+																 '</td><td></td></tr>';
 														}
 													
 													$today=getdate(date("U"));
@@ -269,15 +276,16 @@ echo '
 																 '</td><td>'. fetchUsername($cost[cost_payee_id]) .
 																 '</td><td>'. (($cost[cost_due_date] != NULL) ? $cost[cost_due_date] : 'None') .
 																 '</td><td>'. (($cost[cost_delivered] == 1) ? 'yes' : '<select name="update[delivered]">
-																															<option value=true>yes</option>
-																															<option value=false>no</option>
+																															<option value=1>yes</option>
+																															<option value=0>no</option>
 																														 </select><br><br>
 																														 <button type=\'submit\' class=\'btn btn-primary\' value ='.$cost[cost_id].' name="update[cost_id]">Update</button>') .
 																 '</td><td>'. (($cost[cost_recieved] == 1) ? 'yes' : 'no') .
-																 '<td></td></td></tr>';
+																 '</td><td></td></tr>';
 														}
 														
-													echo'</form></tbody>
+													echo'</form>
+														</tbody>
 													</table>
 												</div>
 											</div>
@@ -317,7 +325,7 @@ echo '
 																 '</td><td>'. (($loggedInUser->user_id == $cost[cost_payee_id]) ? 'you' : fetchUsername($cost[cost_payee_id])) .
 																 '</td><td>'. (($loggedInUser->user_id == $cost[cost_payer_id]) ? 'you' : fetchUsername($cost[cost_payer_id])) .
 																 '</td><td>'. (($cost[cost_due_date] != NULL) ? $cost[cost_due_date] : 'None') .
-																 '<td></td></td></tr>';
+																 '</td><td></td></tr>';
 														}
 															
 													echo'</tbody>
@@ -337,30 +345,31 @@ echo '
 						<h3>Roommate Summary</h3>
 					</div>';
 					
-					//Cycle through debtors
+					//echo(json_encode($roommates));
+					
+					//Cycle through roommates
 					foreach ($roommates as $roommate)
 					{	
 						echo"
 							<div class=\"panel panel-default\">
 								<div class=\"panel-heading\">
-									 <a class=\"panel-title collapsed\" data-toggle=\"collapse\" data-parent=\"#panel-812954\" href=\"#panel-element-1".$roommate[cost_payer_id]."\">".fetchUsername($roommate[cost_payer_id])."</a>
+									 <a class=\"panel-title collapsed\" data-toggle=\"collapse\" data-parent=\"#panel-812954\" href=\"#panel-element-1".$roommate[user_id]."\">".fetchUsername($roommate[user_id])."</a>
 								</div>
-								<div id=\"panel-element-1".$roommate[cost_payer_id]."\" class=\"panel-collapse collapse\">
+								<div id=\"panel-element-1".$roommate[user_id]."\" class=\"panel-collapse collapse\">
 									<div class=\"panel-body\">
-										<div id=\"debtor_".$roommate[cost_payer_id]."\">
+										<div id=\"debtor_".$roommate[user_id]."\">
 										     <ul class=\"list-group\">
 											  <li class=\"list-group-item list-group-item-success\">Total amount owed to you:</li>
 											  <li class=\"list-group-item\">$".$roommate[debt_total]."</li>
 											  <li class=\"list-group-item list-group-item-info\">Total amount you owe:</li>
 											  <li class=\"list-group-item\">$".$roommate[owed_total]."</li>
-											  <li class=\"list-group-item list-group-item-warning\">Total amount paid:</li>
+											  <li class=\"list-group-item list-group-item-warning\">Total amount paid to ".fetchUsername($roommate[user_id]).":</li>
 											  <li class=\"list-group-item\">$".$roommate[recieved_total]."</li>
-											  <li class=\"list-group-item list-group-item-danger\">Total amount recieved:</li>
+											  <li class=\"list-group-item list-group-item-danger\">Total amount recieved from ".fetchUsername($roommate[user_id]).":</li>
 											  <li class=\"list-group-item\">$".$roommate[paid_total]."</li>
 											</ul>
 										</div>
 									</div>
-								</div>
 								</div>
 							</div>
 						";

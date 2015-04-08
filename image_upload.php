@@ -5,49 +5,7 @@
 	{
 		die();
 	}
-		
-	// upload image
-	function uploadImage($name, $image, $apartment_id, $location)
-	{
-		
-		global $mysqli, $db_table_prefix; 
-		$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."images (
-			name,
-			image,
-			apartment_id,
-			location
-			)
-			VALUES (
-			?,
-			?,
-			?,
-			?
-			)");
-			
-		$stmt->bind_param("sbii", $name, $image, $apartment_id, $location);
-		$stmt->send_long_data(1, file_get_contents($image));
-		$result = $stmt->execute();
-		$stmt->close();	
-		return $result;
-	}
-	
-	function getImage($id)
-	{
-		
-		global $mysqli, $db_table_prefix; 
-		$stmt = $mysqli->prepare("SELECT image FROM ".$db_table_prefix."images WHERE id=?");
-			
-		$stmt->bind_param("i",$id);
-		$stmt->execute();
-		$stmt->store_result();
-		$stmt->bind_result($showimage);
-		$stmt->fetch();
-		echo '<img src="data:image/jpeg;base64,'.base64_encode($showimage).'"/>';
-		//header("Content-Type: image/jpeg");
-	
-		$stmt->close();	
-		
-	}
+
 	
 	//Forms posted
 	if(!empty($_POST))
@@ -118,9 +76,10 @@
 		</form>
 	</div>";
 	
+	
 	echo "</center>";
-	
-	getImage(8);
-	
+	echo "<center>";
+	//echo getImage(17);
+	echo "</center>";
 	include 'models/footer.php';
 ?>

@@ -11,6 +11,8 @@ https://developers.google.com/maps/documentation/javascript/examples/infowindow-
 
 https://www.codeofaninja.com/2014/06/google-maps-geocoding-example-php.html
 
+http://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
+
 -->
 
 <?php 
@@ -33,33 +35,55 @@ $loggedIn = false;
 //Check if user is logged in
 if(isUserLoggedIn())
 {
+	if(!empty($_POST))
+	{
+		$favorite_id = $_POST[favorite_id];
+		$type = $_POST[type];
+		
+		if(isset($favorite_id) && isset($type))
+		{
+			switch($type)
+			{
+				case 'add':
+					//add the favorite to the db
+					addFavorite($loggedInUser->user_id, $favorite_id);
+					break;
+				case 'delete':
+					deleteFavorite($loggedInUser->user_id, $favorite_id);
+			}
+		}
+	}
+	
 	$loggedIn = true;
 	
 	//get the user's favorite apartments if logged in
     $favorites = fetchFavorites($loggedInUser->user_id);
 	
-	//for each favorite
-	foreach ($favorites as $favorite)
+	// mark/add favorites to apartments
+	for ($i=0; $i < count($apartments); $i++)
 	{
-		$i;
+		$apartments[$i][fave] = false;
 		
-		//check if the favorite is in $apartments
-		for ($i=0; $i < count($apartments); $i++)
-		{
-			if($favorite.apartment_id == $apartment.apartment_id)
-			{
+		//for each favorite
+		for ($j=0; $j < count($favorites); $j++)
+		{	
+			if($favorites[$j][apartment_id] == $apartments[$i][apartment_id])
+			{	
+				$apartments[$i][fave] = true;
+				array_splice($favorites, $j, 1);
 				break;
 			}
 		}
-		
-		//if not, add the favorite to $apartments
-		if($i == count($apartments))
-		{
-			array_push($apartments, $favorite);
-			$apartments[$i][fave] = true;
-		}
+	}
+	
+	foreach($favorites as $favorite)
+	{
+		$favorite[fave] = true;
+		array_push($apartments, $favorite);
 	}
 }
+
+//echo(json_encode($apartments));
 
 //echo the javascript and html code below
 echo "   
@@ -70,10 +94,10 @@ echo "
 		var map;
 		var coordinates = new Array();
 		var markers = new Array();
-		var stars = [
+		/*var stars = [
 			'/models/site-templates/images/yellow_star.png',
 			'/models/site-templates/images/blue_star.png'
-		];
+		];*/
 		
 		//initialize the Google Map with Iowa City at the center
 		function initialize() 
@@ -105,23 +129,16 @@ echo "
 					  
 			  address = apartments[i].address;
 			  
-			  //check if the current apartment is a favorite
-			  var fave = false;
-			  if('fave' in apartments[i])
-			  {
-				  fave = true;
-			  }
-			  
 			  //if there is a longitude and latitude
 			  if(apartments[i].longitude != null && apartments[i].latitude != null)
 			  {
 				  //create marker for apartment
-				  createMarkerLatLng(apartments[i].latitude, apartments[i].longitude, description, address, fave, apartments[i].apartment_id);
+				  createMarkerLatLng(apartments[i].latitude, apartments[i].longitude, description, address, apartments[i].fave, apartments[i].apartment_id);
 			  }
 			  //otherwise use the address
 			  else
 			  {
-				  createMarkerAddr(address, description, address, fave, apartments[i].apartment_id);
+				  createMarkerAddr(address, description, address, apartments[i].fave, apartments[i].apartment_id);
 			  }
 			  
 			  //extend the bounds of the map for each new marker
@@ -215,6 +232,7 @@ echo "
 			});
 	   }
 	   
+	   /*
 	   //adds or removes a favorite and does proper book-keeping
 	   function changeStar(id) 
 	   {
@@ -236,9 +254,6 @@ echo "
 			   //if the apartment is being favorited
 			   if(temp.indexOf('blue') > -1)
 			   {
-				   //add the favorite to the db
-				   //var temp2 = addFavorite(".$loggedInUser->user_id.", id);		   
-				   
 				   //change the marker icon
 				   for(var i=0; i<markers.length; i++)
 				   {
@@ -248,13 +263,13 @@ echo "
 						   break;
 					   }
 				   }
+				   
+				   //post favorite information
+				   post('".$_SERVER['PHP_SELF']."', {favorite_id: id, type: 'add'});
 			   }
 			   //otherwise the apartment favorite is being deleted
 			   else
-			   {
-				   //remove the favorite from the db
-				   //deleteFavorite(".$loggedInUser->user_id.", id);
-				   
+			   {   
 				   //change the marker icon
 				   for(var i=0; i<markers.length; i++)
 				   {
@@ -264,9 +279,38 @@ echo "
 						   break;
 					   }
 				   }
+				   
+				   //post favorite information
+				   post('".$_SERVER['PHP_SELF']."', {favorite_id: id, type: 'delete'});
 			   }
 		   }
 	   }   
+	   */
+	   
+	   function post(path, params, method) 
+	   {
+			method = method || \"post\"; // Set method to post by default if not specified.
+
+			// The rest of this code assumes you are not using a library.
+			// It can be made less wordy if you use one.
+			var form = document.createElement(\"form\");
+			form.setAttribute(\"method\", method);
+			form.setAttribute(\"action\", path);
+
+			for(var key in params) {
+				if(params.hasOwnProperty(key)) {
+					var hiddenField = document.createElement(\"input\");
+					hiddenField.setAttribute(\"type\", \"hidden\");
+					hiddenField.setAttribute(\"name\", key);
+					hiddenField.setAttribute(\"value\", params[key]);
+
+					form.appendChild(hiddenField);
+				 }
+			}
+
+			document.body.appendChild(form);
+			form.submit();
+		}
 		</script>
 	<div class=\"container\">
 		<div class=\"row clearfix\">
@@ -274,7 +318,7 @@ echo "
 			    <div class=\"page-header\">
 					<h1>
 						Map <br><small>The map below shows Iowa City apartment listings in blue"
-						.(!isUserLoggedIn() ? ".<br>Log in to view your favorites listings in yellow." : " and your favorites in yellow.").
+						.(!isUserLoggedIn() ? ".<br>Log in to view your favorite listings in yellow." : ", and your favorites in yellow.").
 								"</small>
 					</h1>
 				</div>
@@ -283,9 +327,6 @@ echo "
 						<li class=\"active\">
 							<a href=\"#panel-185212\" data-toggle=\"tab\">Apartments in Iowa City</a>
 						</li>
-						<!--<li>
-							<a href=\"#panel-850864\" data-toggle=\"tab\">Favorites</a>
-						</li>-->
 					</ul>
 					<div class=\"tab-content\">
 						<div class=\"tab-pane active\" id=\"panel-185212\">
@@ -323,7 +364,8 @@ echo "
 										<div class=\"panel panel-default\">
 											<div class=\"panel-heading\">
 												 <a class=\"panel-title collapsed\" data-toggle=\"collapse\" data-parent=\"#panel-812954\" href=\"#panel-element-1".$apartment['apartment_id']."\">".$i.". ".$apartment['address']."</a>
-												 <img id='fave_".$apartment['apartment_id']."' style=\"width: 60px; height: 34px;\" src='/models/site-templates/images/".((isset($apartment[fave])) ? "yellow_star.png" : "blue_star.png")."' onclick='changeStar(\"fave_".$apartment['apartment_id']."\")'>
+												 <img id='fave_".$apartment['apartment_id']."' style=\"width: 60px; height: 34px;\" src='/models/site-templates/images/".($apartment[fave] ? "yellow_star.png" : "blue_star.png")."' onclick=".
+														($apartment[fave] ? "\"post('".$_SERVER['PHP_SELF']."', {favorite_id: ".$apartment['apartment_id'].", type: 'delete'});\"" : "\"post('".$_SERVER['PHP_SELF']."', {favorite_id: ".$apartment['apartment_id'].", type: 'add'});\"").">
 										    </div>
 											<div id=\"panel-element-1".$apartment['apartment_id']."\" class=\"panel-collapse collapse\">
 												<div class=\"panel-body\">
@@ -339,56 +381,6 @@ echo "
 								</div>
 							</p>
 						</div>
-						<!--<div class=\"tab-pane\" id=\"panel-850864\">
-							<p>
-								<div class=\"col-md-8 column\">
-									<div class=\"panel panel-default\">
-										<div class=\"panel-heading\">
-											<h3 class=\"panel-title\">-->
-												<!--allow the user to enter a new address -->
-												<!--Enter an address to center the map there: <input type=\"text\" name=\"address\" id=\"address\">
-												<button onclick=\"changeCenter()\">Enter</button>
-												<br><br>
-											</h3>
-										</div>
-										<div class=\"panel-body\">-->
-											<!--display the Google Map -->
-											<!--<div id=\"faveMap\" style=\"width:600px;height:500px;\"></div>
-										</div>
-										<div class=\"panel-footer\">
-											The map above shows your favorite apartment listings.  Click on a location to view more information.
-											If no map appears, get an account <a href=\"/register.php\">here</a>!
-										</div>
-									</div>
-								</div>
-								<div class=\"col-md-4 column\">
-									<div class=\"panel-group\" id=\"panel-812953\">";
-				
-				$i = 0;
-				
-				//Cycle through apartments
-				foreach ($apartments as $apartment)
-				{
-					$i++;
-					
-					echo"
-										<div class=\"panel panel-default\">
-											<div class=\"panel-heading\">
-												 <a class=\"panel-title collapsed\" data-toggle=\"collapse\" data-parent=\"#panel-812953\" href=\"#panel-element-2".$apartment['apartment_id']."\">".$i.". ".$apartment['address']."</a>
-											</div>
-											<div id=\"panel-element-2".$apartment['apartment_id']."\" class=\"panel-collapse collapse\">
-												<div class=\"panel-body\">
-													<div id=\"faveApartment_".$apartment['apartment_id']."\"><a href='/apartment_listing.php?id=".$apartment['apartment_id']."' target='_blank'>".$apartment['address']."</a></div>
-												</div>
-											</div>
-										</div>
-					";
-				}
-				echo "<br><br>
-									</div>
-								</div>
-							</p>
-						</div>-->
 					</div>
 				</div>
 				<div class=\"row clearfix\">
