@@ -11,10 +11,13 @@
 
 	$errors = array();
 	$successes = array();
+	//$GLOBALS['errors'] = $errors;
+	//$GLOBALS['successes'] = $successes;
 
 	/* Create a new mysqli object with database connection parameters */
 	$mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
 	GLOBAL $mysqli;
+	//$GLOBALS['mysqli'] = $mysqli;
 
 	if(mysqli_connect_errno())
 	{

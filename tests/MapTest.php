@@ -1,5 +1,7 @@
 <?php
 
+//require "models/config.php";
+
 /*
  *Test class for map.php; Functions used for map.php
  *are included in funcs.php.  These are the functions
@@ -16,9 +18,49 @@
  */
 class MapTest extends PHPUnit_Framework_TestCase
 {	
+	public static function setUpBeforeClass()
+	{
+		//Database Information
+		$db_host = "localhost"; //Host address (most likely localhost)
+		$db_name = "website_test"; //Name of Database
+		$db_user = "websiteUser"; //Name of database user
+		$db_pass = "4WPXGzCUm2y2TeG7"; //Password for database user
+		$db_table_prefix = "apt_";
+		$GLOBALS['db_table_prefix'] = $db_table_prefix;
+
+		//GLOBAL $errors;
+		//GLOBAL $successes;
+
+		$errors = array();
+		$successes = array();
+		$GLOBALS['errors'] = $errors;
+	    $GLOBALS['successes'] = $successes;
+
+		/* Create a new mysqli object with database connection parameters */
+		$mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
+		//var_dump($mysqli);
+		$GLOBALS['mysqli'] = $mysqli;
+		//var_dump($GLOBALS['mysqli']);
+
+		if(mysqli_connect_errno())
+		{
+			echo "Connection Failed: " . mysqli_connect_errno();
+			exit();
+		}
+	}
+	
+	public function testFetchListingsWithTerms()
+	{
+		$listings = fetchListingsWithTerms();
+		var_dump($listings);
+	}
+	
 	//make sure function works for a set radius
 	public function testFetchIowaCityApartmentsSetRadius()
 	{
+		//global $mysqli;
+		//var_dump($mysqli);
+		
 		//fetch the apartments with a radius chosen
 		$apartments = fetchIowaCityApartments(20);
 		
@@ -193,7 +235,7 @@ function fetchIowaCityApartments($radius = NULL, $limit = 20)
 			if(($apartment['latitude'] != NULL) && ($apartment['longitude'] != NULL))
 			{
 				//update each coordinates
-				updateLatLng($apartment['apartment_id'], $apartment['latitude'], $apartment['longitude']);
+				//updateLatLng($apartment['apartment_id'], $apartment['latitude'], $apartment['longitude']);
 			}
 		}
 	}
@@ -293,6 +335,91 @@ function geocode($address)
 	else
 	{
 		return NULL;
+	}
+}
+
+/*//Update the coordinates of an apartment's location
+function updateLatLng($id, $lat, $lng)
+{
+	global $mysqli,$db_table_prefix;
+	$stmt = $mysqli->prepare("UPDATE ".$db_table_prefix."apartments
+		SET latitude = ?, longitude = ?
+		WHERE
+		apartment_id = ?
+		LIMIT 1");
+	$stmt->bind_param('ddi', $lat, $lng, $id);
+	$result = $stmt->execute();
+	$stmt->close();
+	return $result;
+}*/
+
+//Retrieve the apartment listings for the given search term
+//*************NEEDED FOR MAP.PHP!!!****************
+function fetchListingsWithTerms($terms = NULL)
+{
+	if($terms != NULL)
+	{
+		// TODO custom search results
+		
+		// Return all listings with limit
+		if(isset($terms['limit']))
+		{
+			global $mysqli, $db_table_prefix; 
+			$stmt = $mysqli->prepare("SELECT 
+				apartment_id,
+				name,
+				address,
+				latitude,
+				longitude,
+				num_bedrooms,
+				num_bathrooms,
+				landlord_id,
+				price,
+				deposit,
+				description,
+				status,
+				last_updated
+				FROM ".$db_table_prefix."apartments 
+				LIMIT ".$terms['limit']);
+			$stmt->execute();
+			$stmt->bind_result($apartment_id, $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated);
+			
+			while ($stmt->fetch())
+			{
+				$row[] = array('apartment_id' => $apartment_id, 'name' => $name, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'num_bedrooms' => $num_bedrooms, 'num_bathrooms' => $num_bathrooms, 'landlord_id' => $landlord_id, 'price' => $price, 'deposit' => $deposit, 'description' => $description, 'status' => $status, 'last_updated' => $last_updated);
+			}
+			$stmt->close();
+			return ($row);
+		}
+	}
+	else
+	{
+		// Return all listings
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			apartment_id,
+			name,
+			address,
+			latitude,
+			longitude,
+			num_bedrooms,
+			num_bathrooms,
+			landlord_id,
+			price,
+			deposit,
+			description,
+			status,
+			last_updated
+			FROM ".$db_table_prefix."apartments");
+		$stmt->execute();
+		$stmt->bind_result($apartment_id, $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('apartment_id' => $apartment_id, 'name' => $name, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'num_bedrooms' => $num_bedrooms, 'num_bathrooms' => $num_bathrooms, 'landlord_id' => $landlord_id, 'price' => $price, 'deposit' => $deposit, 'description' => $description, 'status' => $status, 'last_updated' => $last_updated);
+		}
+		$stmt->close();
+		return ($row);
 	}
 }
 
