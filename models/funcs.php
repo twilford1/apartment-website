@@ -1363,19 +1363,19 @@
 		$result = fetchListingsWithTerms($terms);
 		
 		//check if apartments have latitude and longitude values yet
-		foreach($result as $apartment)
+		for($i = 0; $i < count($result); $i++)
 		{	
-			if($apartment['latitude'] == NULL || $apartment['longitude'] == NULL)
+			if($result[$i]['latitude'] == NULL || $result[$i]['longitude'] == NULL)
 			{
-				$results = geocode($apartment['address']);
-				$apartment['latitude'] = $results[0];
-				$apartment['longitude'] = $results[1];
+				$results = geocode($result[$i]['address']);
+				$result[$i]['latitude'] = $results[0];
+				$result[$i]['longitude'] = $results[1];
 				
 				//if a result was found
-				if(($apartment['latitude'] != NULL) && ($apartment['longitude'] != NULL))
+				if(($result[$i]['latitude'] != NULL) && ($result[$i]['longitude'] != NULL))
 				{
 					//update each coordinates
-					updateLatLng($apartment['apartment_id'], $apartment['latitude'], $apartment['longitude']);
+					updateLatLng($result[$i]['apartment_id'], $result[$i]['latitude'], $result[$i]['longitude']);
 				}
 			}
 		}

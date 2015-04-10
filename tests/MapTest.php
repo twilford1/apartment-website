@@ -1,16 +1,19 @@
 <?php
 
 //require "models/config.php";
+require "models/funcs.php";
 
 /*
  *Test class for map.php; Functions used for map.php
  *are included in funcs.php.  These are the functions
- *that will be unit tested.  Because of issues with phpunit,
- *the functions from funcs.php MUST be copied from there
- *to this class to be tested.  Has to do with global variable
- *issues that I am unable to solve in any other way as of yet.
+ *that will be unit tested.  
+ *
+ ********Issues with PHPUnit require that
+ *db setup is managed within this test file instead of using
+ *config.php.
  *
  *Functions to test:
+ *	-fetchListingsWithTerms
  *	-fetchIowaCityApartments
  *	-mathGeoProximity
  *	-mathGeoDistance
@@ -18,9 +21,11 @@
  */
 class MapTest extends PHPUnit_Framework_TestCase
 {	
-	public static function setUpBeforeClass()
+	//set up each test
+	public function setUp()
 	{
-		//Database Information
+		////////////Setup the test database///////////////////
+		
 		$db_host = "localhost"; //Host address (most likely localhost)
 		$db_name = "website_test"; //Name of Database
 		$db_user = "websiteUser"; //Name of database user
@@ -28,65 +33,127 @@ class MapTest extends PHPUnit_Framework_TestCase
 		$db_table_prefix = "apt_";
 		$GLOBALS['db_table_prefix'] = $db_table_prefix;
 
-		//GLOBAL $errors;
-		//GLOBAL $successes;
-
 		$errors = array();
 		$successes = array();
 		$GLOBALS['errors'] = $errors;
 	    $GLOBALS['successes'] = $successes;
 
-		/* Create a new mysqli object with database connection parameters */
+		//Create a new mysqli object with database connection parameters
 		$mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
-		//var_dump($mysqli);
 		$GLOBALS['mysqli'] = $mysqli;
-		//var_dump($GLOBALS['mysqli']);
 
 		if(mysqli_connect_errno())
 		{
 			echo "Connection Failed: " . mysqli_connect_errno();
 			exit();
 		}
+		
+		/////////////Modify the test database for test cases///////////////
+		
+		//Add a Wisconsin address apartment
+		$wisconsin = insertTestApartment("Wisconsin");
+		$GLOBALS['wisconsin'] = $wisconsin;
+		//Add an Iowa City address apartment
+		$iowacity = insertTestApartment("Iowa City");
+		$GLOBALS['iowacity'] = $iowacity;
+		
+		////////////Get the total number of apartments currently//////////
+		
+		//save all apartments in the db to global variable
+		$stmt = $mysqli->prepare("SELECT 
+			apartment_id,
+			name,
+			address,
+			latitude,
+			longitude,
+			num_bedrooms,
+			num_bathrooms,
+			landlord_id,
+			price,
+			deposit,
+			description,
+			status,
+			last_updated
+			FROM ".$db_table_prefix."apartments");
+		$stmt->execute();
+		$stmt->bind_result($apartment_id, $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('apartment_id' => $apartment_id, 'name' => $name, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'num_bedrooms' => $num_bedrooms, 'num_bathrooms' => $num_bathrooms, 'landlord_id' => $landlord_id, 'price' => $price, 'deposit' => $deposit, 'description' => $description, 'status' => $status, 'last_updated' => $last_updated);
+		}
+		$stmt->close();
+		
+		$GLOBALS['all_apartments'] = $row;
 	}
 	
-	public function testFetchListingsWithTerms()
+	//make sure the function works with no terms
+	public function testFetchListingsWithTerms_NoTerms()
 	{
+		global $all_apartments;
+		
+		//get all apartments
 		$listings = fetchListingsWithTerms();
-		var_dump($listings);
+		
+		//check if the function actually got all apartments
+		$this->assertTrue(count($all_apartments) == count($listings));
+	}
+	
+	//make sure the function works with the limit term set 
+	//(only possible term currently)
+	public function testFetchListingsWithTerms_WithLimit()
+	{
+		$terms = array("limit"=>1);
+		//get all apartments
+		$listings = fetchListingsWithTerms($terms);
+		
+		//check if the function actually got all apartments
+		$this->assertTrue(count($listings) == 1);
 	}
 	
 	//make sure function works for a set radius
 	public function testFetchIowaCityApartmentsSetRadius()
-	{
-		//global $mysqli;
-		//var_dump($mysqli);
+	{	
+		global $all_apartments, $iowacity, $wisconsin;
 		
 		//fetch the apartments with a radius chosen
 		$apartments = fetchIowaCityApartments(20);
 		
-		//result of the function
-		$result = true;
+		//assert that the radius limited the results
+		$this->assertTrue(count($all_apartments) > count($apartments));
 		
+		//result of the function
+		$result1 = true;
+		$result2 = false;
+		
+		//check results for the two apartments created above
 		foreach($apartments as $apartment)
 		{
-			if($apartment['address'] == "Wisconsin" && count($apartments) != 5)
+			if($apartment['apartment_id'] == $wisconsin['apartment_id'])
 			{
-				$result = false;
+				$result1 = false;
+			}
+			else if($apartment['apartment_id'] == $iowacity['apartment_id'])
+			{
+				$result2 = true;
 			}
 		}
 		
-		//only tuple which should not be returned is the address "Wisconsin"
-		$this->assertTrue($result);
+		//if Wisconsin wasn't returned but an Iowa City address was, radius worked
+		$this->assertTrue($result1 && $result2);
 	}
 	
 	//fetch all possible apartments when radius isn't set
 	public function testFetchIowaCityApartmentsNoRadius()
-	{
+	{	
+		//all apartments in db
+		global $all_apartments;
+		
 		//fetch the apartments with no radius (default)
 		$apartments = fetchIowaCityApartments();
 		
 		//only tuple which should not be returned is the address "Wisconsin"
-		$this->assertTrue(count($apartments) == 6);
+		$this->assertTrue(count($all_apartments) == count($apartments));
 	}
 	
 	//test that all expected attributes are received
@@ -207,220 +274,96 @@ class MapTest extends PHPUnit_Framework_TestCase
 		//make sure they match the known coordinates
 		$this->assertTrue($location == NULL);
 	}
-}
-
-/************************MAP FUNCTIONS (w/out db)***********************************/
-//Fetches apartments in a certain radius of Iowa City for the map.php page
-function fetchIowaCityApartments($radius = NULL, $limit = 20)
-{
-	$mockListings = array(["apartment_id" => 1, "latitude" => 41.684727, "longitude" => -91.591194, "address" => "20th Ave Place Coralville, IA 52241"],
-						  ["apartment_id" => 8, "latitude" => 43, "longitude" => -90, "address" => "Wisconsin"],
-						  ["apartment_id" => 2, "latitude" => 41.657234, "longitude" => -91.527702, "address" => "317 South Johnson Iowa City, IA 52240"],
-						  ["apartment_id" => 3, "latitude" => 41.663624, "longitude" => -91.535896, "address" => "14 East Market Iowa City, IA 52245"],
-						  ["apartment_id" => 4, "latitude" => 41.653446, "longitude" => -91.526306, "address" => "621 S Dodge Street Iowa City, IA 52240"],
-						  ["apartment_id" => 5, "latitude" => 41.658039, "longitude" => -91.530991, "address" => "318 E Burlington St Iowa City, IA 52240"]);
 	
-	$result = $mockListings;
-	
-	//check if apartments have latitude and longitude values yet
-	foreach($result as $apartment)
-	{	
-		if($apartment['latitude'] == NULL || $apartment['longitude'] == NULL)
-		{
-			$results = geocode($apartment['address']);
-			$apartment['latitude'] = $results[0];
-			$apartment['longitude'] = $results[1];
-			
-			//if a result was found
-			if(($apartment['latitude'] != NULL) && ($apartment['longitude'] != NULL))
-			{
-				//update each coordinates
-				//updateLatLng($apartment['apartment_id'], $apartment['latitude'], $apartment['longitude']);
-			}
-		}
-	}
-	
-	//fetch all listings
-	if($radius == NULL)
+	//reset the database after each test
+	public function teardown()
 	{
-		return $result;
-	}
-	//return only the locations within the given radius of Iowa City
-	else
-	{	
-		//get proximity variable in miles for IowaCity coordinates
-		$proximity = mathGeoProximity(41.6660136,-91.544685, $radius, true);
+		global $wisconsin, $iowacity;
 
-		// fetch all record and check whether they are really within the radius
-		$recordsWithinRadius = array();
-		
-		//check each result
-		foreach($result as $apartment)
-		{
-			if($apartment['latitude'] != NULL && $apartment['longitude'] != NULL)
-			{
-				$distance = mathGeoDistance(41.6660136,-91.544685, $apartment['latitude'], $apartment['longitude'], true);
-				
-				if ($distance <= $radius) 
-				{
-					array_push($recordsWithinRadius, $apartment);
-				}
-			}
-		}
-		
-		return $recordsWithinRadius;
+		//delete test apartments
+		deleteTestApartment($wisconsin['apartment_id']);
+		deleteTestApartment($iowacity['apartment_id']);
 	}
 }
 
-// calculate geographical proximity
-function mathGeoProximity( $latitude, $longitude, $radius, $miles = false )
+/*
+ *insertTestApartment: inserts apartment with given address and returns 
+ *					   resulting tuple
+ */
+function insertTestApartment($address)
 {
-	$radius = $miles ? $radius : ($radius * 0.621371192);
-
-	$lng_min = $longitude - $radius / abs(cos(deg2rad($latitude)) * 69);
-	$lng_max = $longitude + $radius / abs(cos(deg2rad($latitude)) * 69);
-	$lat_min = $latitude - ($radius / 69);
-	$lat_max = $latitude + ($radius / 69);
-
-	return array(
-		'latitudeMin'  => $lat_min,
-		'latitudeMax'  => $lat_max,
-		'longitudeMin' => $lng_min,
-		'longitudeMax' => $lng_max
-	);
-}
-
-// calculate geographical distance between 2 points
-function mathGeoDistance( $lat1, $lng1, $lat2, $lng2, $miles = false )
-{
-	$pi80 = M_PI / 180;
-	$lat1 *= $pi80;
-	$lng1 *= $pi80;
-	$lat2 *= $pi80;
-	$lng2 *= $pi80;
-
-	$r = 6372.797; // mean radius of Earth in km
-	$dlat = $lat2 - $lat1;
-	$dlng = $lng2 - $lng1;
-	$a = sin($dlat / 2) * sin($dlat / 2) + cos($lat1) * cos($lat2) * sin($dlng / 2) * sin($dlng / 2);
-	$c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-	$km = $r * $c;
-
-	return ($miles ? ($km * 0.621371192) : $km);
-}
-
-// function to geocode address, it will return false if unable to geocode address
-function geocode($address)
-{
-	// url encode the address
-	$address = urlencode($address);
-	 
-	// google map geocode api url
-	$url = "http://maps.google.com/maps/api/geocode/json?sensor=false&address={$address}";
- 
-	// get the json response
-	$resp_json = file_get_contents($url);
-	 
-	// decode the json
-	$resp = json_decode($resp_json, true);
-	// response status will be 'OK', if able to geocode given address
-	if($resp['status']=='OK'){
- 
-		// get the important data
-		$lat = $resp['results'][0]['geometry']['location']['lat'];
-		$lng = $resp['results'][0]['geometry']['location']['lng'];
-		
-		return array($lat, $lng);
-	}
-	else
-	{
-		return NULL;
-	}
-}
-
-/*//Update the coordinates of an apartment's location
-function updateLatLng($id, $lat, $lng)
-{
-	global $mysqli,$db_table_prefix;
-	$stmt = $mysqli->prepare("UPDATE ".$db_table_prefix."apartments
-		SET latitude = ?, longitude = ?
-		WHERE
-		apartment_id = ?
-		LIMIT 1");
-	$stmt->bind_param('ddi', $lat, $lng, $id);
+	global $mysqli, $db_table_prefix;
+	//insert apartment
+	$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."apartments (
+		name,
+		address,
+		num_bedrooms,
+		num_bathrooms,
+		landlord_id,
+		price,
+		description,
+		status
+		)
+		VALUES (
+		'DeleteMe',
+		?,
+		1,
+		1,
+		1,
+		200.00,
+		'I should not be (testing)',
+		'unavailable'
+		)");		
+	$stmt->bind_param("s", $address);
 	$result = $stmt->execute();
+	$stmt->close();	
+	
+	//return apartment tuple
+	$stmt = $mysqli->prepare("SELECT 
+		apartment_id,
+		name,
+		address,
+		latitude,
+		longitude,
+		num_bedrooms,
+		num_bathrooms,
+		landlord_id,
+		price,
+		deposit,
+		description,
+		status,
+		last_updated
+		FROM ".$db_table_prefix."apartments
+		WHERE address = ?
+		");
+	$stmt->bind_param("s", $address);
+	$stmt->execute();
+	$stmt->bind_result($apartment_id, $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated);
+	
+	$row = NULL;
+	
+	while ($stmt->fetch())
+	{
+		$row = array('apartment_id' => $apartment_id, 'name' => $name, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'num_bedrooms' => $num_bedrooms, 'num_bathrooms' => $num_bathrooms, 'landlord_id' => $landlord_id, 'price' => $price, 'deposit' => $deposit, 'description' => $description, 'status' => $status, 'last_updated' => $last_updated);
+	}
 	$stmt->close();
-	return $result;
-}*/
+	return $row;
+}
 
-//Retrieve the apartment listings for the given search term
-//*************NEEDED FOR MAP.PHP!!!****************
-function fetchListingsWithTerms($terms = NULL)
+/*
+ *deleteTestApartment: deletes apartment specified
+ */
+function deleteTestApartment($id)
 {
-	if($terms != NULL)
-	{
-		// TODO custom search results
-		
-		// Return all listings with limit
-		if(isset($terms['limit']))
-		{
-			global $mysqli, $db_table_prefix; 
-			$stmt = $mysqli->prepare("SELECT 
-				apartment_id,
-				name,
-				address,
-				latitude,
-				longitude,
-				num_bedrooms,
-				num_bathrooms,
-				landlord_id,
-				price,
-				deposit,
-				description,
-				status,
-				last_updated
-				FROM ".$db_table_prefix."apartments 
-				LIMIT ".$terms['limit']);
-			$stmt->execute();
-			$stmt->bind_result($apartment_id, $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated);
-			
-			while ($stmt->fetch())
-			{
-				$row[] = array('apartment_id' => $apartment_id, 'name' => $name, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'num_bedrooms' => $num_bedrooms, 'num_bathrooms' => $num_bathrooms, 'landlord_id' => $landlord_id, 'price' => $price, 'deposit' => $deposit, 'description' => $description, 'status' => $status, 'last_updated' => $last_updated);
-			}
-			$stmt->close();
-			return ($row);
-		}
-	}
-	else
-	{
-		// Return all listings
-		global $mysqli, $db_table_prefix; 
-		$stmt = $mysqli->prepare("SELECT 
-			apartment_id,
-			name,
-			address,
-			latitude,
-			longitude,
-			num_bedrooms,
-			num_bathrooms,
-			landlord_id,
-			price,
-			deposit,
-			description,
-			status,
-			last_updated
-			FROM ".$db_table_prefix."apartments");
-		$stmt->execute();
-		$stmt->bind_result($apartment_id, $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated);
-		
-		while ($stmt->fetch())
-		{
-			$row[] = array('apartment_id' => $apartment_id, 'name' => $name, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'num_bedrooms' => $num_bedrooms, 'num_bathrooms' => $num_bathrooms, 'landlord_id' => $landlord_id, 'price' => $price, 'deposit' => $deposit, 'description' => $description, 'status' => $status, 'last_updated' => $last_updated);
-		}
-		$stmt->close();
-		return ($row);
-	}
+	global $mysqli, $db_table_prefix;
+	
+	//delete apartment
+	$stmt = $mysqli->prepare("DELETE FROM ".$db_table_prefix."apartments 
+		WHERE apartment_id = ?");		
+	$stmt->bind_param("i", $id);
+	$result = $stmt->execute();
+	$stmt->close();	
+	return $result;
 }
 
 ?>

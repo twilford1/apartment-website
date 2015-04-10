@@ -79,7 +79,7 @@
 	
 	echo "</center>";
 	echo "<center>";
-	//echo getImage(17);
+	//echo getImage(19);
 	echo "</center>";
 	include 'models/footer.php';
 ?>
