@@ -1356,6 +1356,28 @@
 		return ($row);
 	}
 	
+	//fetches a user's roommates
+	function fetchRoommates($user_id)
+	{
+		// Return specified listing
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			roommate_id
+			FROM ".$db_table_prefix."roommates
+			WHERE user_id = ?
+			");
+		$stmt->bind_param("i", $user_id);
+		$stmt->execute();
+		$stmt->bind_result($roommate_id);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('roommate_id' => $roommate_id);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
     //Fetches apartments in a certain radius of Iowa City for the map.php page
 	function fetchIowaCityApartments($radius = NULL, $limit = 20)
 	{
@@ -1656,6 +1678,7 @@
 		return ($row);
 	}
 	
+	/*
 	//Get all of the users who currently owe the specified user
 	function fetchAllDebtors($user_id)
 	{
@@ -1699,6 +1722,7 @@
 		$stmt->close();
 		return ($row);
 	}
+	*/
 	
 	//Delete specified costs
 	function deleteCost($cost_id)

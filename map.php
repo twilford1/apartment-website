@@ -26,9 +26,15 @@ if (!securePage($_SERVER['PHP_SELF']))
 	die();
 }
 
+//radius of Iowa City to pull results from
+$radius = 20;
+
+//limit on number of results
+$limit = 50;
+
 //get apartments within 20 miles of Iowa City
 //limit to 50 results
-$apartments = fetchIowaCityApartments(20, 50);
+$apartments = fetchIowaCityApartments($radius, $limit);
 
 $loggedIn = false;
 
@@ -96,7 +102,7 @@ echo "
 		var markers = new Array();
 		/*var stars = [
 			'/models/site-templates/images/yellow_star.png',
-			'/models/site-templates/images/blue_star.png'
+			'/models/site-templates/images/grey_star.png'
 		];*/
 		
 		//initialize the Google Map with Iowa City at the center
@@ -183,7 +189,7 @@ echo "
 			 });
 
 			 var marker = new google.maps.Marker({
-				icon: (!fave) ? 'http://maps.google.com/mapfiles/ms/icons/ltblue-dot.png':'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
+				icon: (!fave) ? 'http://maps.google.com/mapfiles/marker_grey.png':'http://maps.google.com/mapfiles/marker_yellow.png',
 				position: latlng,
 				map: map,
 				title: titleString
@@ -252,14 +258,14 @@ echo "
 			   id = id.replace('fave_', '');
 			   
 			   //if the apartment is being favorited
-			   if(temp.indexOf('blue') > -1)
+			   if(temp.indexOf('grey') > -1)
 			   {
 				   //change the marker icon
 				   for(var i=0; i<markers.length; i++)
 				   {
 					   if(markers[i].id == id)
 					   {
-						   markers[i].marker.setIcon('http://maps.google.com/mapfiles/ms/icons/yellow-dot.png');
+						   markers[i].marker.setIcon('http://maps.google.com/mapfiles/marker_yellow.png');
 						   break;
 					   }
 				   }
@@ -275,7 +281,7 @@ echo "
 				   {
 					   if(markers[i].id == id)
 					   {
-						   markers[i].marker.setIcon('http://maps.google.com/mapfiles/ms/icons/ltblue-dot.png');
+						   markers[i].marker.setIcon('http://maps.google.com/mapfiles/marker_grey.png');
 						   break;
 					   }
 				   }
@@ -317,7 +323,7 @@ echo "
 			<div class=\"col-md-12 column\">
 			    <div class=\"page-header\">
 					<h1>
-						Map <br><small>The map below shows Iowa City apartment listings in blue"
+						Map <br><small>The map below shows Iowa City apartment listings in grey"
 						.(!isUserLoggedIn() ? ".<br>Log in to view your favorite listings in yellow." : ", and your favorites in yellow.").
 								"</small>
 					</h1>
@@ -346,7 +352,8 @@ echo "
 											<div id=\"googleMap\" style=\"width:600px;height:500px;\"></div>
 										</div>
 										<div class=\"panel-footer\">
-											The map above shows apartment listings in the Iowa City area.  Click on a location to view more information.
+											The map above shows apartment listings within ".$radius." miles of Iowa City.  Click on a location to view more information.
+											</br></br><small>*NOTE: the number of results is limited to ".$limit.".</small>
 										</div>
 									</div>
 								</div>
@@ -364,7 +371,7 @@ echo "
 										<div class=\"panel panel-default\">
 											<div class=\"panel-heading\">
 												 <a class=\"panel-title collapsed\" data-toggle=\"collapse\" data-parent=\"#panel-812954\" href=\"#panel-element-1".$apartment['apartment_id']."\">".$i.". ".$apartment['address']."</a>
-												 <img id='fave_".$apartment['apartment_id']."' style=\"width: 60px; height: 34px;\" src='/models/site-templates/images/".($apartment[fave] ? "yellow_star.png" : "blue_star.png")."' onclick=".
+												 <img id='fave_".$apartment['apartment_id']."' style=\"width: 60px; height: 34px;\" src='/models/site-templates/images/".($apartment[fave] ? "yellow_star.png" : "grey_star.png")."' onclick=".
 														($apartment[fave] ? "\"post('".$_SERVER['PHP_SELF']."', {favorite_id: ".$apartment['apartment_id'].", type: 'delete'});\"" : "\"post('".$_SERVER['PHP_SELF']."', {favorite_id: ".$apartment['apartment_id'].", type: 'add'});\"").">
 										    </div>
 											<div id=\"panel-element-1".$apartment['apartment_id']."\" class=\"panel-collapse collapse\">

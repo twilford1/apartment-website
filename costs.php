@@ -38,13 +38,13 @@ if(!empty($_POST))
 	//update a specified cost
 	if(isset($update) && isset($update['cost_id']))
 	{
-		if(isset($update['delivered']))
+		if(isset($update['delivered'.$update['cost_id']]))
 		{
-			(updateCost($update['cost_id'],fetchCostById($update['cost_id'])[0]['cost_recieved'], $update['delivered']));
+			(updateCost($update['cost_id'],fetchCostById($update['cost_id'])[0]['cost_recieved'], $update['delivered'.$update['cost_id']]));
 		}
-		else if(isset($update['recieved']))
+		else if(isset($update['recieved'.$update['cost_id']]))
 		{
-			updateCost($update['cost_id'],$update['recieved'],fetchCostById($update['cost_id'])[0]['cost_delivered']);
+			updateCost($update['cost_id'],$update['recieved'.$update['cost_id']],fetchCostById($update['cost_id'])[0]['cost_delivered']);
 		}
 	}
 	
@@ -80,84 +80,52 @@ if(!empty($_POST))
 	}*/
 }
 
-//get roommate data
+//get the logged in user's roommates
+$roommates = fetchRoommates($loggedInUser->user_id);
+//get the costs owed to the logged in user
 $payee_cost = fetchOwedCosts($loggedInUser->user_id);
+//get the costs owed by the logged in user
 $payer_cost = fetchDebtCosts($loggedInUser->user_id);
+//get the completed transactions of the logged in user
 $complete_cost = fetchCompleteCosts($loggedInUser->user_id);
-$roommates = fetchAllDebtors($loggedInUser->user_id);
-$payees = fetchAllPayees($loggedInUser->user_id);
 
-//consolidate debt data
+//get debt, owed, received, and paid totals for roommates
 for($i=0; $i<count($roommates); $i++)
 {
-	$roommates[$i][debts] = fetchDebtCosts($roommates[$i][cost_payer_id]);
-	
 	$roommates[$i][debt_total] = 0;
-	$roommates[$i][owed] = 0;		
 	$roommates[$i][owed_total] = 0;
 	$roommates[$i][recieved_total] = 0;
 	$roommates[$i][paid_total] = 0;
-	$roommates[$i][user_id] = $roommates[$i][cost_payer_id];
 	
-	foreach($roommates[$i][debts] as $debt)
-	{	
-		if($debt[cost_payee_id] == $loggedInUser->user_id)
+	//get the roommate's total debt to the user
+	foreach($payee_cost as $cost)
+	{
+		if($roommates[$i][roommate_id] == $cost[cost_payer_id])
 		{
-			$roommates[$i][debt_total] = $roommates[$i][debt_total] + $debt[cost_amount];
-		}
-	}
-}
-
-//add payee data to consolidated roommate data
-for($j=0; $j<count($payees); $j++)
-{
-	$payees[$j][owed] = fetchOwedCosts($payees[$j][cost_payee_id]);
-			
-	$payees[$j][owed_total] = 0;
-	
-	foreach($payees[$j][owed] as $owed)
-	{	
-		if($owed[cost_payer_id] == $loggedInUser->user_id)
-		{
-			$payees[$j][owed_total] = $payees[$j][owed_total] + $owed[cost_amount];
+			$roommates[$i][debt_total] =  $roommates[$i][debt_total] + $cost[cost_amount];
 		}
 	}
 	
-	$payees[$j][recieved_total] = 0;
-	$payees[$j][paid_total] = 0;
-	$payees[$j][debt_total] = 0;
+	//get the roommate's total owed by the user
+	foreach($payer_cost as $cost)
+	{
+		if($roommates[$i][roommate_id] == $cost[cost_payee_id])
+		{
+			$roommates[$i][owed_total] = $roommates[$i][owed_total] + $cost[cost_amount];
+		}
+	}
 	
+	//get the roommate's total debt to the user
 	foreach($complete_cost as $cost)
 	{
-		if($cost[cost_payee_id] == $payees[$j][cost_payee_id])
+		if($roommates[$i][roommate_id] == $cost[cost_payer_id])
 		{
-			$payees[$j][recieved_total] = $payees[$j][recieved_total] + $cost[cost_amount];
+			$roommates[$i][paid_total] = $roommates[$i][paid_total] + $cost[cost_amount];
 		}
-		else if($cost[cost_payer_id] == $payees[$j][cost_payee_id])
+		else if($roommates[$i][roommate_id] == $cost[cost_payee_id])
 		{
-			$payees[$j][paid_total] = $payees[$j][paid_total] + $cost[cost_amount];
+			$roommates[$i][recieved_total] = $roommates[$i][recieved_total] + $cost[cost_amount];
 		}
-	}
-	
-	$i;
-	
-	for($i=0; $i<count($roommates); $i++)
-	{
-		if($roommates[$i][cost_payer_id] == $payees[$j][cost_payee_id])
-		{
-			$roommates[$i][owed] = $payees[$j][owed];		
-			$roommates[$i][owed_total] = $payees[$j][owed_total];
-			$roommates[$i][recieved_total] = $payees[$j][recieved_total];
-			$roommates[$i][paid_total] = $payees[$j][paid_total];
-			break;
-		}
-	}
-	
-	//if the roommate is not also a debtor
-	if($i == count($roommates))
-	{	
-		$payees[$j][user_id] = $payees[$j][cost_payee_id];
-		array_push($roommates, $payees[$j]);
 	}
 }
 
@@ -215,7 +183,7 @@ echo '
 																 '</td><td>'. fetchUsername($cost[cost_payer_id]) .
 																 '</td><td>'. (($cost[cost_due_date] != NULL) ? $cost[cost_due_date] : 'None') .
 																 '</td><td>'. (($cost[cost_delivered] == 1) ? 'yes' : 'no') .
-																 '</td><td>'. (($cost[cost_recieved] == 1) ? 'yes' : ($cost[cost_delivered] == 1) ? '<select name="update[recieved]">
+																 '</td><td>'. (($cost[cost_recieved] == 1) ? 'yes' : ($cost[cost_delivered] == 1) ? '<select name="update[recieved'.$cost[cost_id].']">
 																																						<option value=1>yes</option>
 																																						<option value=0>no</option>
 																																					 </select><br><br>
@@ -275,7 +243,7 @@ echo '
 																 '</td><td>'. $cost[cost_description] .
 																 '</td><td>'. fetchUsername($cost[cost_payee_id]) .
 																 '</td><td>'. (($cost[cost_due_date] != NULL) ? $cost[cost_due_date] : 'None') .
-																 '</td><td>'. (($cost[cost_delivered] == 1) ? 'yes' : '<select name="update[delivered]">
+																 '</td><td>'. (($cost[cost_delivered] == 1) ? 'yes' : '<select name="update[delivered'.$cost[cost_id].']">
 																															<option value=1>yes</option>
 																															<option value=0>no</option>
 																														 </select><br><br>
@@ -345,27 +313,25 @@ echo '
 						<h3>Roommate Summary</h3>
 					</div>';
 					
-					//echo(json_encode($roommates));
-					
 					//Cycle through roommates
 					foreach ($roommates as $roommate)
 					{	
 						echo"
 							<div class=\"panel panel-default\">
 								<div class=\"panel-heading\">
-									 <a class=\"panel-title collapsed\" data-toggle=\"collapse\" data-parent=\"#panel-812954\" href=\"#panel-element-1".$roommate[user_id]."\">".fetchUsername($roommate[user_id])."</a>
+									 <a class=\"panel-title collapsed\" data-toggle=\"collapse\" data-parent=\"#panel-812954\" href=\"#panel-element-1".$roommate[roommate_id]."\">".fetchUsername($roommate[roommate_id])."</a>
 								</div>
-								<div id=\"panel-element-1".$roommate[user_id]."\" class=\"panel-collapse collapse\">
+								<div id=\"panel-element-1".$roommate[roommate_id]."\" class=\"panel-collapse collapse\">
 									<div class=\"panel-body\">
-										<div id=\"debtor_".$roommate[user_id]."\">
+										<div id=\"debtor_".$roommate[roommate_id]."\">
 										     <ul class=\"list-group\">
 											  <li class=\"list-group-item list-group-item-success\">Total amount owed to you:</li>
 											  <li class=\"list-group-item\">$".$roommate[debt_total]."</li>
 											  <li class=\"list-group-item list-group-item-info\">Total amount you owe:</li>
 											  <li class=\"list-group-item\">$".$roommate[owed_total]."</li>
-											  <li class=\"list-group-item list-group-item-warning\">Total amount paid to ".fetchUsername($roommate[user_id]).":</li>
+											  <li class=\"list-group-item list-group-item-warning\">Total amount paid to ".fetchUsername($roommate[roommate_id]).":</li>
 											  <li class=\"list-group-item\">$".$roommate[recieved_total]."</li>
-											  <li class=\"list-group-item list-group-item-danger\">Total amount recieved from ".fetchUsername($roommate[user_id]).":</li>
+											  <li class=\"list-group-item list-group-item-danger\">Total amount recieved from ".fetchUsername($roommate[roommate_id]).":</li>
 											  <li class=\"list-group-item\">$".$roommate[paid_total]."</li>
 											</ul>
 										</div>
