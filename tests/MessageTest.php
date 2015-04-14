@@ -18,6 +18,31 @@
 	{	
 		public function testFetchUserID()
 		{
+			////////////Setup the test database///////////////////
+		
+			$db_host = "localhost"; //Host address (most likely localhost)
+			$db_name = "website_test"; //Name of Database
+			$db_user = "websiteUser"; //Name of database user
+			$db_pass = "4WPXGzCUm2y2TeG7"; //Password for database user
+			$db_table_prefix = "apt_";
+			$GLOBALS['db_table_prefix'] = $db_table_prefix;
+
+			$errors = array();
+			$successes = array();
+			$GLOBALS['errors'] = $errors;
+			$GLOBALS['successes'] = $successes;
+
+			//Create a new mysqli object with database connection parameters
+			$mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
+			$GLOBALS['mysqli'] = $mysqli;
+
+			if(mysqli_connect_errno())
+			{
+				echo "Connection Failed: " . mysqli_connect_errno();
+				$this->assertTrue(false);
+				exit();
+			}
+
 			$recipientID = fetchUserID("twilford");
 			
 			$result = true;
@@ -32,6 +57,31 @@
 		
 		public function testUnreadCount()
 		{
+			////////////Setup the test database///////////////////
+		
+			$db_host = "localhost"; //Host address (most likely localhost)
+			$db_name = "website_test"; //Name of Database
+			$db_user = "websiteUser"; //Name of database user
+			$db_pass = "4WPXGzCUm2y2TeG7"; //Password for database user
+			$db_table_prefix = "apt_";
+			$GLOBALS['db_table_prefix'] = $db_table_prefix;
+
+			$errors = array();
+			$successes = array();
+			$GLOBALS['errors'] = $errors;
+			$GLOBALS['successes'] = $successes;
+
+			//Create a new mysqli object with database connection parameters
+			$mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
+			$GLOBALS['mysqli'] = $mysqli;
+
+			if(mysqli_connect_errno())
+			{
+				echo "Connection Failed: " . mysqli_connect_errno();
+				$this->assertTrue(false);
+				exit();
+			}
+
 			$unreadCount = unreadCount(1);
 			
 			$result = true;
@@ -46,6 +96,31 @@
 				
 		public function testFetchMessages()
 		{
+			////////////Setup the test database///////////////////
+		
+			$db_host = "localhost"; //Host address (most likely localhost)
+			$db_name = "website_test"; //Name of Database
+			$db_user = "websiteUser"; //Name of database user
+			$db_pass = "4WPXGzCUm2y2TeG7"; //Password for database user
+			$db_table_prefix = "apt_";
+			$GLOBALS['db_table_prefix'] = $db_table_prefix;
+
+			$errors = array();
+			$successes = array();
+			$GLOBALS['errors'] = $errors;
+			$GLOBALS['successes'] = $successes;
+
+			//Create a new mysqli object with database connection parameters
+			$mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
+			$GLOBALS['mysqli'] = $mysqli;
+
+			if(mysqli_connect_errno())
+			{
+				echo "Connection Failed: " . mysqli_connect_errno();
+				$this->assertTrue(false);
+				exit();
+			}
+
 			$messages = fetchMessages(1, "inbox");
 			
 			$result = true;
@@ -60,6 +135,31 @@
 		
 		public function testFetchUsername()
 		{
+			////////////Setup the test database///////////////////
+		
+			$db_host = "localhost"; //Host address (most likely localhost)
+			$db_name = "website_test"; //Name of Database
+			$db_user = "websiteUser"; //Name of database user
+			$db_pass = "4WPXGzCUm2y2TeG7"; //Password for database user
+			$db_table_prefix = "apt_";
+			$GLOBALS['db_table_prefix'] = $db_table_prefix;
+
+			$errors = array();
+			$successes = array();
+			$GLOBALS['errors'] = $errors;
+			$GLOBALS['successes'] = $successes;
+
+			//Create a new mysqli object with database connection parameters
+			$mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
+			$GLOBALS['mysqli'] = $mysqli;
+
+			if(mysqli_connect_errno())
+			{
+				echo "Connection Failed: " . mysqli_connect_errno();
+				$this->assertTrue(false);
+				exit();
+			}
+
 			$testUsername = fetchUsername(1);
 			
 			$result = true;
@@ -74,6 +174,31 @@
 		
 		public function testMessageIdExists()
 		{
+			////////////Setup the test database///////////////////
+		
+			$db_host = "localhost"; //Host address (most likely localhost)
+			$db_name = "website_test"; //Name of Database
+			$db_user = "websiteUser"; //Name of database user
+			$db_pass = "4WPXGzCUm2y2TeG7"; //Password for database user
+			$db_table_prefix = "apt_";
+			$GLOBALS['db_table_prefix'] = $db_table_prefix;
+
+			$errors = array();
+			$successes = array();
+			$GLOBALS['errors'] = $errors;
+			$GLOBALS['successes'] = $successes;
+
+			//Create a new mysqli object with database connection parameters
+			$mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
+			$GLOBALS['mysqli'] = $mysqli;
+
+			if(mysqli_connect_errno())
+			{
+				echo "Connection Failed: " . mysqli_connect_errno();
+				$this->assertTrue(false);
+				exit();
+			}
+
 			$ifMessageExists = messageIdExists(1);
 			
 			$result = true;
@@ -88,6 +213,31 @@
 		
 		public function testFetchMessageDetails()
 		{
+			////////////Setup the test database///////////////////
+		
+			$db_host = "localhost"; //Host address (most likely localhost)
+			$db_name = "website_test"; //Name of Database
+			$db_user = "websiteUser"; //Name of database user
+			$db_pass = "4WPXGzCUm2y2TeG7"; //Password for database user
+			$db_table_prefix = "apt_";
+			$GLOBALS['db_table_prefix'] = $db_table_prefix;
+
+			$errors = array();
+			$successes = array();
+			$GLOBALS['errors'] = $errors;
+			$GLOBALS['successes'] = $successes;
+
+			//Create a new mysqli object with database connection parameters
+			$mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
+			$GLOBALS['mysqli'] = $mysqli;
+
+			if(mysqli_connect_errno())
+			{
+				echo "Connection Failed: " . mysqli_connect_errno();
+				$this->assertTrue(false);
+				exit();
+			}
+
 			$message = fetchMessageDetails(1);
 			
 			$result = true;

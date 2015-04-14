@@ -9,6 +9,27 @@
 	$aptId = $_GET['id'];
 	
 	$aptDetails = fetchListingDetails($aptId);
+	$reviews = getAptReviews($aptId);
+	
+	if(isUserLoggedIn())
+	{
+		if(!empty($_POST))
+		{
+			$apartment_id = $aptId;
+			$user_id = $loggedInUser->user_id;
+			$review = trim($_POST["review"]);
+			$rating = (int)$_POST["rating"];
+			
+			//Construct an apartment review object
+			$review = createApartmentReview($apartment_id, $user_id, $review, $rating);
+
+			if(!empty($review))
+			{
+				$successes[] = lang("REVIEW_ADDED");
+				$reviews = getAptReviews($aptId);
+			}
+		}
+	}
 	
 	if($aptDetails == null)
 	{
@@ -21,119 +42,175 @@
 	echo resultBlock($errors, $successes);
 	echo "
 	<style>
-	 .animated {
-		-webkit-transition: height 0.2s;
-		-moz-transition: height 0.2s;
-		transition: height 0.2s;
-	}
+		 .animated {
+			-webkit-transition: height 0.2s;
+			-moz-transition: height 0.2s;
+			transition: height 0.2s;
+		}
 
-	.stars
-	{
-		margin: 20px 0;
-		font-size: 24px;
-		color: #d17581;
-	}
+		.stars
+		{
+			margin: 20px 0;
+			font-size: 24px;
+			color: #d17581;
+		}
 	</style>
 	<center>
 		<h2>Apartment Listing</h2>
 	</center>
 	<br>
 	<div class='srtgs'  id='rt_".$aptId."'></div>
-	<div class='container'>
-		<div class='row'>			
-			<div class='col-xs-12 col-sm-12 col-md-6 col-lg-6 col-xs-offset-0 col-sm-offset-0 col-md-offset-3 col-lg-offset-3 toppad' >
-				<div class='panel panel-default'>
-					<div class='panel-heading'>
-						<center>
-							<h3 class='panel-title'>".$aptDetails['name']."</h3>
-						</center>
-					</div>
-				
-					<div class='panel-body'>
-						<div class='row'>
-							<div class='col-md-3 col-lg-3 ' align='center'>
-								<img src='/models/site-templates/images/no-image.png' alt='No Image' width='125' height='125'>
-							</div>
-						
-							<div class=' col-md-9 col-lg-9 '> 
-								<table class='table table-user-information'>
-									<tbody>
-										<tr>
-											<td>Landlord:</td>
-											<td>id ".$aptDetails['landlord_id']."</td>
-										</tr>
-										<tr>
-											<td>Address:</td>
-											<td>".$aptDetails['address']."</td>
-										</tr>
-										<tr>
-											<td>Rent:</td>
-											<td>$".$aptDetails['price']."</td>
-										</tr>
-										<tr>
-											<td>Status:</td>
-											<td>".$aptDetails['status']."</td>
-										</tr>
-										<tr>
-											<td>Bed/Bath</td>
-											<td>".$aptDetails['num_bedrooms']."/".$aptDetails['num_bathrooms']."</td>
-										</tr>
-										<tr>
-											<td>Description</td>
-											<td>".$aptDetails['description']."</td>
-										</tr>
-										<tr>
-											<td>Contact</td>
-											<td><a href='mailto:info@support.com'>info@support.com</a></td>
-										</tr>
-										<tr>
-											<td>Phone Number</td>
-											<td>
-												123-4567-890(Landline)<br><br>555-4567-890(Mobile)
-											</td>
-										</tr>
-									</tbody>
-								</table>
-								<center>
-									<a href='#' class='btn btn-primary'>View Landlord</a>
-									<a href='#' class='btn btn-primary'>View on Map</a>
-								</center>
+		<div class='container'>
+			<div class='row'>			
+				<div class='col-xs-12 col-sm-12 col-md-6 col-lg-6 col-xs-offset-0 col-sm-offset-0 col-md-offset-3 col-lg-offset-3 toppad' >
+					<div class='panel panel-default'>
+						<div class='panel-heading'>
+							<center>
+								<h3 class='panel-title'>".$aptDetails['name']."</h3>
+							</center>
+						</div>
+					
+						<div class='panel-body'>
+							<div class='row'>
+								<div class='col-md-3 col-lg-3 ' align='center'>
+									<img src='/models/site-templates/images/no-image.png' alt='No Image' width='125' height='125'>
+								</div>
+							
+								<div class=' col-md-9 col-lg-9 '> 
+									<table class='table table-user-information'>
+										<tbody>
+											<tr>
+												<td>Landlord:</td>
+												<td>id ".$aptDetails['landlord_id']."</td>
+											</tr>
+											<tr>
+												<td>Address:</td>
+												<td>".$aptDetails['address']."</td>
+											</tr>
+											<tr>
+												<td>Rent:</td>
+												<td>$".$aptDetails['price']."</td>
+											</tr>
+											<tr>
+												<td>Status:</td>
+												<td>".$aptDetails['status']."</td>
+											</tr>
+											<tr>
+												<td>Bed/Bath</td>
+												<td>".$aptDetails['num_bedrooms']."/".$aptDetails['num_bathrooms']."</td>
+											</tr>
+											<tr>
+												<td>Description</td>
+												<td>".$aptDetails['description']."</td>
+											</tr>
+											<tr>
+												<td>Contact</td>
+												<td><a href='mailto:info@support.com'>info@support.com</a></td>
+											</tr>
+											<tr>
+												<td>Phone Number</td>
+												<td>
+													123-4567-890(Landline)<br><br>555-4567-890(Mobile)
+												</td>
+											</tr>
+										</tbody>
+									</table>
+									<center>
+										<a href='#' class='btn btn-primary'>View Landlord</a>
+										<a href='#' class='btn btn-primary'>View on Map</a>
+									</center>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-	
 		<div class='container'>
-		<div class='row' style='margin-top:40px;'>
-			<div class='col-md-6'>
-				<div class='well well-sm'>
-					<div class='text-right'>
-						<a class='btn btn-success btn-green' href='#reviews-anchor' id='open-review-box'>Leave a Review</a>
-					</div>
-				
-					<div class='row' id='post-review-box' style='display:none;'>
-						<div class='col-md-12'>
-							<form accept-charset='UTF-8' action='' method='post'>
-								<input id='ratings-hidden' name='rating' type='hidden'> 
-								<textarea class='form-control animated' cols='50' id='new-review' name='comment' placeholder='Enter your review here...' rows='5'></textarea>
-				
-								<div class='text-right'>
-									<div class='stars starrr' data-rating='0'></div>
-									<a class='btn btn-danger btn-sm' href='#' id='close-review-box' style='display:none; margin-right: 10px;'>
-									<span class='glyphicon glyphicon-remove'></span>Cancel</a>
-									<button class='btn btn-success btn-lg' type='submit'>Save</button>
-								</div>
-							</form>
+			<div class='row' style='margin-top:0px;'>
+				<div class='col-xs-12 col-sm-12 col-md-6 col-lg-6 col-xs-offset-0 col-sm-offset-0 col-md-offset-3 col-lg-offset-3 toppad'>
+					<div class='well well-sm'>
+						<div class='text-center'>
+							<a class='btn btn-success btn-green' href='#reviews-anchor' id='open-review-box'>Leave a Review</a>
 						</div>
-					</div>
-				</div> 
+					
+						<div class='row' id='post-review-box' style='display:none;'>
+							<div class='col-md-12'>
+								<form accept-charset='UTF-8' action='' method='post'>
+									<input id='ratings-hidden' name='rating' type='hidden'> 
+									<textarea class='form-control animated' cols='50' id='new-review' name='review' placeholder='Enter your review here...' rows='5'></textarea>
+					
+									<div class='text-right'>
+										<div class='stars starrr' data-rating='0'></div>
+										<a class='btn btn-danger btn-sm' href='#' id='close-review-box' style='display:none; margin-right: 10px;'>
+										<span class='glyphicon glyphicon-remove'></span>Cancel</a>
+										<button class='btn btn-success btn-lg' type='submit'>Save</button>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div> 
+				</div>
 			</div>
 		</div>
 	</div>
-	<script src='reviewJS.js' type='text/javascript'></script>";
+	
+	<center>
+		<div style='width:900px;'>
+			<h2>Reviews</h2>
+			<br>
+			<div class='table-responsive'>
+				<table id='grid-basic' class='table table-hover table-striped'>
+					<thead>
+						<tr>
+							<th data-column-id='user' data-type='numeric'>UserID</th>
+							<th data-column-id='review' data-formatter='link2'>Review</th>
+							<th data-column-id='rating'>Rating</th>
+						</tr>
+					</thead>
+					<tbody>";
+					
+					if(empty($reviews))
+					{
+						echo "
+						<tr>
+							<td>
+							</td>
+							<td>
+								-
+							</td>
+							<td>
+								-
+							</td>
+						</tr>";
+					}
+					else
+					{
+						//Display list of reviews
+						foreach ($reviews as $rev)
+						{
+							echo "
+							<tr>
+								<td>
+									".$rev['user_id']."
+								</td>
+								<td>
+									".$rev['review']."
+								</td>
+								<td>
+									".$rev['rating']."
+								</td>
+							</tr>";
+						}
+					}
+					echo "
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</center>
+	
+	<script src='models/reviewJS.js' type='text/javascript'></script>";
 	
 	include 'models/footer.php';
 ?>

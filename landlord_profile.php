@@ -9,6 +9,27 @@
 	$llId = $_GET['id'];
 	
 	$llDetails = fetchLandlordDetails($llId);
+	$reviews = getLLReviews($llId);
+	
+	if(isUserLoggedIn())
+	{
+		if(!empty($_POST))
+		{
+			$landlord_id = $llId;
+			$user_id = $loggedInUser->user_id;
+			$review = trim($_POST["review"]);
+			$rating = (int)$_POST["rating"];
+			
+			//Construct an landlord review object
+			$review = createLandlordReview($landlord_id, $user_id, $review, $rating);
+
+			if(!empty($review))
+			{
+				$successes[] = lang("REVIEW_ADDED");
+				$reviews = getLLReviews($llId);
+			}
+		}
+	}
 	
 	if($llDetails == null)
 	{
@@ -77,17 +98,11 @@
 			</div>
 		</div>
 	</div>
-	
-	<br>
-	<br>
-	<br>
-	<br>
-	
 	<div class='container'>
-		<div class='row' style='margin-top:40px;'>
-			<div class='col-md-6'>
+			<div class='row' style='margin-top:0px;'>
+				<div class='col-xs-12 col-sm-12 col-md-6 col-lg-6 col-xs-offset-0 col-sm-offset-0 col-md-offset-3 col-lg-offset-3 toppad'>
 				<div class='well well-sm'>
-					<div class='text-right'>
+					<div class='text-center'>
 						<a class='btn btn-success btn-green' href='#reviews-anchor' id='open-review-box'>Leave a Review</a>
 					</div>
 				
@@ -95,7 +110,7 @@
 						<div class='col-md-12'>
 							<form accept-charset='UTF-8' action='' method='post'>
 								<input id='ratings-hidden' name='rating' type='hidden'> 
-								<textarea class='form-control animated' cols='50' id='new-review' name='comment' placeholder='Enter your review here...' rows='5'></textarea>
+								<textarea class='form-control animated' cols='50' id='new-review' name='review' placeholder='Enter your review here...' rows='5'></textarea>
 				
 								<div class='text-right'>
 									<div class='stars starrr' data-rating='0'></div>
@@ -110,9 +125,63 @@
 			</div>
 		</div>
 	</div>
-	<script src='reviewJS.js' type='text/javascript'></script>
-
-        <hr>";
+	
+	<center>
+		<div style='width:900px;'>
+			<h2>Reviews</h2>
+			<br>
+			<div class='table-responsive'>
+				<table id='grid-basic' class='table table-hover table-striped'>
+					<thead>
+						<tr>
+							<th data-column-id='user' data-type='numeric'>UserID</th>
+							<th data-column-id='review' data-formatter='link2'>Review</th>
+							<th data-column-id='rating'>Rating</th>
+						</tr>
+					</thead>
+					<tbody>";
+					
+					if(empty($reviews))
+					{
+						echo "
+						<tr>
+							<td>
+							</td>
+							<td>
+								-
+							</td>
+							<td>
+								-
+							</td>
+						</tr>";
+					}
+					else
+					{
+						//Display list of reviews
+						foreach ($reviews as $rev)
+						{
+							echo "
+							<tr>
+								<td>
+									".$rev['user_id']."
+								</td>
+								<td>
+									".$rev['review']."
+								</td>
+								<td>
+									".$rev['rating']."
+								</td>
+							</tr>";
+						}
+					}
+					echo "
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</center>
+	
+	<script src='models/reviewJS.js' type='text/javascript'></script>";
 	
 	include 'models/footer.php';
 	

@@ -79,7 +79,8 @@
 	
 	echo "</center>";
 	echo "<center>";
-	//echo getImage(19);
+	//echo getImage(7);
+	echo getLastImage();
 	echo "</center>";
 	include 'models/footer.php';
 ?>

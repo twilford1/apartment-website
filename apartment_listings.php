@@ -106,6 +106,8 @@
 	</center>";
 	*/
 	
+	
+	
 	echo "
 	<center>
 	<div style='width:900px;'>
@@ -126,32 +128,7 @@
 				</thead>
 				<tbody>";
 				
-				if(empty($listings))
-				{
-					echo "
-					<tr>
-						<td>
-						</td>
-						<td>
-						</td>
-						<td>
-							-
-						</td>
-						<td>
-							-
-						</td>
-						<td>
-							-
-						</td>
-						<td>
-							-
-						</td>
-						<td>
-							-
-						</td>
-					</tr>";
-				}
-				else
+				if(!empty($listings))
 				{
 					$i = 1;
 					//Display list of pages

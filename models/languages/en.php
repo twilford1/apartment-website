@@ -4,7 +4,7 @@ $lang = array();
 
 //Account
 $lang = array_merge($lang,array(
-	"ACCOUNT_SPECIFY_USERNAME" 		=> "Please enter your username",
+	"ACCOUNT_SPECIFY_USERNAME"  	=> "Please enter your username",
 	"ACCOUNT_SPECIFY_PASSWORD" 		=> "Please enter your password",
 	"ACCOUNT_SPECIFY_EMAIL"			=> "Please enter your email address",
 	"ACCOUNT_INVALID_EMAIL"			=> "Invalid email address",
@@ -86,6 +86,12 @@ $lang = array_merge($lang,array(
 	"PROPERTY_ADDED"        => "Property added successfully",
 	"PROPERTY_CHAR_LIMIT"		=> "Your property name must be between %m1% and %m2% characters in length",
 	"PROPERTY_INVALID_CHARACTERS"	=> "Property names can only include alpha-numeric characters",
+	));
+	
+//Review
+$lang = array_merge($lang,array(
+	"REVIEW_ADDED"  	=> "Review added successfully",
+	"REVIEW_FAILED"  	=> "Review failed to post",
 	));
 
 // Image
