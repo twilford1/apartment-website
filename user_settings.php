@@ -5,7 +5,7 @@
 	{
 		die();
 	}
-	//Prevent the user visiting the logged in page if he is not logged in
+	//Prevent the user visiting the page if they are not logged in
 	if(!isUserLoggedIn())
 	{
 		header("Location: login.php");
@@ -16,9 +16,8 @@
 	{
 		if(isset($_POST['requestLandlord']))
 		{
-			// TODO update
 			$messageContent = fetchUsername($loggedInUser->user_id)." has requested to become a landlord. Their ID is: ".$loggedInUser->user_id;
-			if(newMessage($loggedInUser->user_id, 1, "Landlord Request", $messageContent, 0))
+			if(sendAdminsMessage($loggedInUser->user_id, "Landlord Request", $messageContent))
 			{
 				$successes = [0 => "Landlord Request Sent"];
 			}
@@ -29,9 +28,8 @@
 		}
 		else if(isset($_POST['requestAdmin']))
 		{			
-			// TODO update
 			$messageContent = fetchUsername($loggedInUser->user_id)." has requested to become an admin. Their ID is: ".$loggedInUser->user_id;
-			if(newMessage($loggedInUser->user_id, 1, "Admin Request", $messageContent, 0))
+			if(sendAdminsMessage($loggedInUser->user_id, "Admin Request", $messageContent))
 			{
 				$successes = [0 => "Admin Request Sent"];
 			}
@@ -47,12 +45,10 @@
 			$password = $_POST["password"];
 			$password_new = $_POST["passwordc"];
 			$password_confirm = $_POST["passwordcheck"];
-			
-			$errors = array();
 			$email = $_POST["email"];
-			
-			//Perform some validation
-			//Feel free to edit / change as required
+			$gender = $_POST["gender"];
+			$privateProfile = $_POST["privateProfile"];
+			$description = $_POST["description"];
 			
 			//Confirm the hashes match before updating a users password
 			$entered_pass = generateHash($password, $loggedInUser->hash_pw);
@@ -128,25 +124,30 @@
 					}
 				}
 			}
+			
+			if($gender != $loggedInUser->gender && count($errors) == 0)
+			{
+				$loggedInUser->updateGender($gender);
+				$successes[] = lang("ACCOUNT_GENDER_UPDATED");
+			}
+			
+			if($privateProfile != $loggedInUser->private_profile && count($errors) == 0)
+			{
+				$loggedInUser->updatePrivateProfile((int) $privateProfile);
+				$successes[] = lang("ACCOUNT_PRIVATE_PROFILE_UPDATED");
+			}
+			
+			if($description != $loggedInUser->description && count($errors) == 0)
+			{
+				$loggedInUser->updateDescription($description);
+				$successes[] = lang("ACCOUNT_DESCRIPTION_UPDATED");
+			}
+			
 			if(count($errors) == 0 AND count($successes) == 0)
 			{
 				$errors[] = lang("NOTHING_TO_UPDATE");
 			}
 		}
-	}
-	
-	
-	if($loggedInUser->checkPermission(array(1)))
-	{
-		$requestButtons = "<button type='submit' name='requestLandlord' class='btn btn-primary' name='Update'>Request Landlord</button> <button type='submit' name='requestAdmin' class='btn btn-primary' name='Update'>Request Admin</button>";
-	}
-	else if($loggedInUser->checkPermission(array(3)))
-	{
-		$requestButtons = "<button type='submit' name='requestAdmin' class='btn btn-primary' name='Update'>Request Admin</button>";
-	}
-	else
-	{
-		$requestButtons = "";
 	}
 	
 	require_once("models/header.php");
@@ -167,17 +168,24 @@
 	<div style='width:500px;'>
 		<form name='updateAccount' class='form-horizontal' action='".$_SERVER['PHP_SELF']."' method='post'>
 			<div class='form-group'>
+				<label class='col-sm-5 control-label'>Profile Picture</label>
+				<div class='col-sm-7'>
+					<img alt='User Pic' src=".get_gravatar($loggedInUser->email, 80, 'mm','x', false )." class='img-circle'>
+					<br>
+					<br>
+					<a href='https://en.gravatar.com/emails/' class='btn btn-primary' title='Use $loggedInUser->email for gravatar'>Change Picture</a>
+			   </div>
+			</div>
+			<br>
+			<br>
+			<br>
+			<div class='form-group'>
 				<label class='col-sm-5 control-label'>Current Password</label>
 				<div class='col-sm-7'>
-					<input type='password' class='form-control' name='password' placeholder='Current Password'>
+					<input type='password' class='form-control' name='password' placeholder='Current Password (Required)'>
 				</div>
 			</div>
-			<div class='form-group'>
-				<label class='col-sm-5 control-label'>Email</label>
-				<div class='col-sm-7'>
-					<input type='text' class='form-control' name='email' value='".$loggedInUser->email."' placeholder='Email'>
-				</div>
-			</div>
+			<br>
 			<div class='form-group'>
 				<label class='col-sm-5 control-label'>New Password</label>
 				<div class='col-sm-7'>
@@ -190,18 +198,92 @@
 					<input type='password' class='form-control' name='passwordcheck' placeholder='Confirm Password'>					
 				</div>
 			</div>
+			<br>			
+			<div class='form-group'>
+				<label class='col-sm-5 control-label'>Account Type</label>
+				<div class='col-sm-7'>";
+					if($loggedInUser->checkPermission(array(2)))
+					{						
+						echo "<p class='form-control-static' style='float:left;'>$loggedInUser->title</p>";
+					}
+					else
+					{
+						echo "<p class='form-control-static' style='float:left;'><a href'#' data-toggle='collapse' data-target='#requestPermissions'>$loggedInUser->title</a></p>";
+					}
+				echo "
+				</div>
+			</div>
+			<div class='collapse form-group' id='requestPermissions'>
+				<label class='col-sm-5 control-label'></label>
+				<div class='col-sm-7'>";
+					$requestTimestamp = permissionRequestSent($loggedInUser->user_id);
+					if(isset($requestTimestamp))
+					{
+						echo "<p class='form-control-static' style='float:left;'>Permissions requested on <b>".date("M d, Y", $requestTimestamp['timestamp'])."</b></p>";
+					}
+					else
+					{
+						echo "<button type='submit' name='requestLandlord' class='btn btn-primary' name='Update'>Request Landlord</button> <button type='submit' name='requestAdmin' class='btn btn-primary' name='Update'>Request Admin</button>";
+					}
+				echo "
+				</div>
+			</div>
+			<div class='form-group'>
+				<label class='col-sm-5 control-label'>Email</label>
+				<div class='col-sm-7'>
+					<input type='text' class='form-control' name='email' value='".$loggedInUser->email."' placeholder='Email'>
+				</div>
+			</div>
+			<div class='form-group'>
+				<label class='col-sm-5 control-label'>Gender</label>
+				<div class='col-sm-7'>
+					<select class='form-control' name='gender'>";
+						$genderArray = array("male", "female", "unspecified");
+						foreach ($genderArray as $g)
+						{
+							if ($loggedInUser->gender == $g)
+							{
+								echo "<option value='".$g."' selected>$g</option>";
+							}
+							else
+							{
+								echo "<option value='".$g."'>$g</option>";
+							}
+						}
+					echo "
+					</select>
+				</div>
+			</div>
+			<div class='form-group'>
+				<label class='col-sm-5 control-label'>Private Profile</label>
+				<div class='col-sm-7'>
+					<select class='form-control' name='privateProfile'>";
+						$privateProfileArray = array("No" => 0, "Yes" => 1);
+						foreach ($privateProfileArray as $p)
+						{
+							if ($loggedInUser->private_profile == $p)
+							{
+								echo "<option value='".$p."' selected>".array_search($p, $privateProfileArray)."</option>";
+							}
+							else
+							{
+								echo "<option value='".$p."'>".array_search($p, $privateProfileArray)."</option>";
+							}
+						}
+					echo "
+					</select>
+				</div>
+			</div>
+			<div class='form-group'>
+				<label class='col-sm-5 control-label'>Description</label>
+				<div class='col-sm-7'>
+					<textarea name='description' class='form-control' rows='3'>".$loggedInUser->description."</textarea>
+				</div>
+			</div>
+			<br>
 			<div class='form-group'>
 				<div class='col-sm-offset-5 col-sm-7'>
-					<button type='submit' class='btn btn-primary' name='Update'>Update</button>
-					<br>
-					<br>
-					<a href='https://signup.wordpress.com/signup/?ref=oauth2&oauth2_redirect=eafa52c08af7306830929a914678c9ea%40https%3A%2F%2Fpublic-api.wordpress.com%2Foauth2%2Fauthorize%2F%3Fclient_id%3D1854%26response_type%3Dcode%26blog_id%3D0%26state%3D081f7f317b7890c132e23c865cf97ea4c7dabe03596fada55c3d1638a9603ea7%26redirect_uri%3Dhttps%253A%252F%252Fen.gravatar.com%252Fconnect%252F%253Faction%253Drequest_access_token%26jetpack-code%26jetpack-user-id%3D0%26action%3Doauth2-login&wpcom_connect=1' class='btn btn-primary'>Edit Profile Picture</a>
-					<br>
-					<label class='col-sm-60 control-label'>Note: Please sign-up/login with your ApartmentFinder Email</label>
-					<br>
-					<br>
-					<br>						
-					".$requestButtons."
+					<button type='submit' class='btn btn-primary' name='Update'>Update Info</button>
 				</div>
 			</div>
 		</form>			

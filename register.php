@@ -67,7 +67,7 @@
 			if(!$user->status)
 			{
 				if($user->username_taken) $errors[] = lang("ACCOUNT_USERNAME_IN_USE", array($username));
-				if($user->displayname_taken) $errors[] = lang("ACCOUNT_DISPLAYNAME_IN_USE", array($displayname));
+				//if($user->displayname_taken) $errors[] = lang("ACCOUNT_DISPLAYNAME_IN_USE", array($displayname));
 				if($user->email_taken) 	  $errors[] = lang("ACCOUNT_EMAIL_IN_USE", array($email));		
 			}
 			else
@@ -144,15 +144,6 @@
 				</div>
 			</div>
 		</form>			
-	</div>
-	
-			
-			
-			
-			
-			
-			
-		</form>
 	</div>";
 	
 	echo "</center>";

@@ -44,6 +44,27 @@
 		}
 		else
 		{
+			if(isset($_POST['grantRequest']))
+			{
+				//TODO
+				//move user to permission group
+				//delete messages
+				//email admins/user
+				$successes = [0 => "Permission Granted"];
+				header("Refresh: 1;url=messages.php?m=inbox");
+			}
+			if(isset($_POST['denyRequest']))
+			{
+				//TODO
+				//delete messages
+				//email admins/user
+				$successes = [0 => "Permission Denied"];
+				header("Refresh: 1;url=messages.php?m=inbox");
+			}
+			
+			
+			
+			
 			// If the message was sent to you then that means you are
 			// replying, so the new recipient is the old sender
 			if($loggedInUser->user_id == $message['recipient_id'])
@@ -275,30 +296,44 @@
 							
 							if($loggedInUser->user_id != $message['sender_id'])
 							{
-								echo "
-								<br>
-								<center>
+								echo "<center>";
+								
+								if(isRequest($message['id']))
+								{
+									echo "
 									<button type='submit' name='toggleRead' class='".$toggleReadLabel."'>
 										<span class='glyphicon glyphicon-envelope'></span>
 									</button>
-									<a class='btn btn-primary' data-toggle='collapse' href='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>
-										<span class='glyphicon glyphicon-pencil'></span>
-									</a>
-								</center>
-								<br>
-								<div class='collapse' id='collapseExample'>			
-									<div class='col-sm-9 col-sm-offset-2'>	
-										<div class='form-group'>
-											<textarea name='message' class='form-control' id='message' name='body' rows='4' placeholder='Click here to reply'></textarea>
+									<button type='submit' name='grantRequest' class='btn btn-primary'>Grant Request</button>
+									<button type='submit' name='denyRequest' class='btn btn-primary'>Deny Request</button>
+									<br>";
+								}
+								else
+								{									
+									echo"
+										<br>
+										<button type='submit' name='toggleRead' class='".$toggleReadLabel."'>
+											<span class='glyphicon glyphicon-envelope'></span>
+										</button>
+										<a class='btn btn-primary' data-toggle='collapse' href='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>
+											<span class='glyphicon glyphicon-pencil'></span>
+										</a>
+									</center>
+									<br>
+									<div class='collapse' id='collapseExample'>			
+										<div class='col-sm-9 col-sm-offset-2'>	
+											<div class='form-group'>
+												<textarea name='message' class='form-control' id='message' name='body' rows='4' placeholder='Click here to reply'></textarea>
+											</div>
+											
+											<center>
+												<button type='reset' class='btn btn-default' data-toggle='collapse' data-target='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>Discard</button>
+												<button type='submit' name='draftButton' class='btn btn-default'>Draft</button>
+												<button type='submit' name='sendButton' class='btn btn-primary'>Send</button>
+											</center>
 										</div>
-										
-										<center>
-											<button type='reset' class='btn btn-default' data-toggle='collapse' data-target='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>Discard</button>
-											<button type='submit' name='draftButton' class='btn btn-default'>Draft</button>
-											<button type='submit' name='sendButton' class='btn btn-primary'>Send</button>
-										</center>
-									</div>
-								</div>";
+									</div>";
+								}
 							}
 						}
 						

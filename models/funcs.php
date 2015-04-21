@@ -327,6 +327,9 @@
 			display_name,
 			password,
 			email,
+			gender,
+			private_profile,
+			description,
 			activation_token,
 			last_activation_request,
 			lost_password_request,
@@ -339,11 +342,11 @@
 			$column = ?
 			LIMIT 1");
 			$stmt->bind_param("s", $data);
-		
 		$stmt->execute();
-		$stmt->bind_result($id, $user, $display, $password, $email, $token, $activationRequest, $passwordRequest, $active, $title, $signUp, $signIn);
-		while ($stmt->fetch()){
-			$row = array('id' => $id, 'user_name' => $user, 'display_name' => $display, 'password' => $password, 'email' => $email, 'activation_token' => $token, 'last_activation_request' => $activationRequest, 'lost_password_request' => $passwordRequest, 'active' => $active, 'title' => $title, 'sign_up_stamp' => $signUp, 'last_sign_in_stamp' => $signIn);
+		$stmt->bind_result($id, $user, $display, $password, $email, $gender, $private_profile, $description, $token, $activationRequest, $passwordRequest, $active, $title, $signUp, $signIn);
+		while ($stmt->fetch())
+		{
+			$row = array('id' => $id, 'user_name' => $user, 'display_name' => $display, 'password' => $password, 'email' => $email, 'gender' => $gender, 'private_profile' => $private_profile, 'description' => $description, 'activation_token' => $token, 'last_activation_request' => $activationRequest, 'lost_password_request' => $passwordRequest, 'active' => $active, 'title' => $title, 'sign_up_stamp' => $signUp, 'last_sign_in_stamp' => $signIn);
 		}
 		$stmt->close();
 		return ($row);
@@ -1877,6 +1880,57 @@
 		return ($row);
 	}
 	
+	//Return true if the username is unique, false if it already exists
+	function isUnique($username)
+	{
+		if($username == NULL)
+		{
+			return false;
+		}
+		else
+		{
+			global $mysqli, $db_table_prefix; 
+			$stmt = $mysqli->prepare("SELECT 
+				id
+				FROM ".$db_table_prefix."users
+				WHERE user_name = ?
+				LIMIT 1");
+				$stmt->bind_param("s", $username);
+			$stmt->execute();
+			$stmt->bind_result($user);
+			$row = null;
+			while ($stmt->fetch())
+			{
+				$row = $user;
+			}
+			$stmt->close();
+			
+			if($row == NULL)
+			{
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+	}
+	
+	function get_gravatar($email, $s = 80, $d = 'mm', $r = 'g', $img = false, $atts = array())
+	{
+		$url = 'http://www.gravatar.com/avatar/';
+		$url .= md5(strtolower(trim($email)));
+		$url .= "?s=$s&d=$d&r=$r";
+		if ($img)
+		{
+			$url = "<img src='".$url."'";
+			foreach ($atts as $key => $val)
+				$url .= ' ' . $key . '="' . $val . '"';
+			$url .= ' />';
+		}
+		return $url;
+	}
+	
 	//Retrieve all the user's sent messages
 	function fetchMessages($user_id, $mailbox)
 	{
@@ -2068,6 +2122,55 @@
 		}
 	}
 	
+	//Return true if the message is a permission request
+	function isRequest($id)
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			sender_id,
+			recipient_id,
+			subject,
+			message
+			FROM ".$db_table_prefix."messages
+			WHERE
+			id = ?
+			LIMIT 1");
+			$stmt->bind_param("i", $id);
+		$stmt->execute();
+		$stmt->bind_result($sender_id, $recipient_id, $subject, $message);
+		while ($stmt->fetch())
+		{
+			$row = array('sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message);
+		}
+		$stmt->close();
+		
+		$request = false;
+		
+		if(isset($row))
+		{
+			$permissionUsers = fetchPermissionUsers(2);
+			$messageSubject1 = "Landlord Request";
+			$messageContent1 = fetchUsername($row['sender_id'])." has requested to become a landlord. Their ID is: ".$row['sender_id'];
+			$messageSubject2 = "Admin Request";
+			$messageContent2 = fetchUsername($row['sender_id'])." has requested to become an admin. Their ID is: ".$row['sender_id'];
+			
+			if(isset($permissionUsers[$row['recipient_id']]))
+			{
+				if($row['subject'] == $messageSubject1 && $row['message'] == $messageContent1)
+				{
+					$request = true;
+				}
+				
+				if($row['subject'] == $messageSubject2 && $row['message'] == $messageContent2)
+				{
+					$request = true;
+				}
+			}
+		}
+		
+		return $request;
+	}
+	
 	//Retrieve the unread count
 	function unreadCount($user_id)
 	{		
@@ -2077,7 +2180,7 @@
 			FROM ".$db_table_prefix."messages
 			WHERE recipient_id = ?
 			");
-			$stmt->bind_param("i", $user_id);
+		$stmt->bind_param("i", $user_id);
 		$stmt->execute();
 		$stmt->bind_result($id, $sender_id, $recipient_id, $subject, $message, $timestamp, $wasRead, $draft);
 		$total = 0;
@@ -2090,6 +2193,47 @@
 		}
 		$stmt->close();
 		return ($total);
+	}
+	
+	//Retrieve information for all users
+	function sendAdminsMessage($sender_id, $subject, $message)
+	{
+		$sent = false;
+		$admins = fetchPermissionUsers(2);
+		foreach ($admins as $a)
+		{
+			if(newMessage($sender_id, $a['user_id'], $subject, $message, 0))
+			{
+				$sent = true;
+			}
+		}		
+		return $sent;
+	}
+	
+	//Check if a user has already sent a permission Request
+	function permissionRequestSent($id)
+	{
+		$messageContent1 = fetchUsername($id)." has requested to become a landlord. Their ID is: ".$id;
+		$messageContent2 = fetchUsername($id)." has requested to become an admin. Their ID is: ".$id;
+		
+		global $mysqli, $db_table_prefix;
+		$stmt = $mysqli->prepare("SELECT timestamp
+			FROM ".$db_table_prefix."messages
+			WHERE
+			sender_id = ?
+			AND
+			(message = ? OR message = ?)			
+			LIMIT 1");
+		$stmt->bind_param("iss", $id, $messageContent1, $messageContent2);	
+		$stmt->execute();
+		$stmt->bind_result($timestamp);
+		$row = null;
+		while ($stmt->fetch())
+		{
+			$row = array('timestamp' => $timestamp);
+		}
+		$stmt->close();
+		return ($row);
 	}
 	
 	//Fetch js limited information on all pages
@@ -2307,9 +2451,10 @@
 			WHERE apartment_id = ?");
 
 		$stmt->bind_param("i", $id);
-		$stmt->execute();
+		$result = $stmt->execute();
 
 		$stmt->close();
+		return $result;
 
 	}
 	
@@ -2386,7 +2531,6 @@
 	//Echo the image given selected image id
 	function getImage($id)
 	{
-		
 		global $mysqli, $db_table_prefix; 
 		$stmt = $mysqli->prepare("SELECT image FROM ".$db_table_prefix."images WHERE id=?");
 			
@@ -2415,9 +2559,10 @@
 			WHERE id = ?");
 
 		$stmt->bind_param("i", $id);
-		$stmt->execute();
+		$result = $stmt->execute();
 
 		$stmt->close();
+		return $result;
 
 	}
 ?>

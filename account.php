@@ -8,18 +8,7 @@
 		
 	require_once("models/header.php");	
 	
-	function get_gravatar( $email, $s = 80, $d = 'mm', $r = 'g', $img = false, $atts = array() ) {
-		$url = 'http://www.gravatar.com/avatar/';
-		$url .= md5( strtolower( trim( $email ) ) );
-		$url .= "?s=$s&d=$d&r=$r";
-		if ( $img ) {
-			$url = '<img src="' . $url . '"';
-			foreach ( $atts as $key => $val )
-				$url .= ' ' . $key . '="' . $val . '"';
-			$url .= ' />';
-		}
-		return $url;
-	}
+	
 	echo "
 	<center>
 		<div style='width:700px;'>
@@ -28,10 +17,16 @@
 				<h2>Welcome to Apartment Finder!</h2>
 				<br>
 				<h4>
-				User title: $loggedInUser->title
-				<br>
-				<br>
-				Registered on: ".date("M d, Y", $loggedInUser->signupTimeStamp())."
+					User title: $loggedInUser->title
+					<br>
+					<br>
+					Registered on: ".date("M d, Y", $loggedInUser->signupTimeStamp())."
+					<br>
+					<br>
+					Private Profile: ".$loggedInUser->private_profile."
+					<br>
+					<br>
+					Description: ".$loggedInUser->description."
 				</h4>
 			</div>
 		</div>
@@ -65,11 +60,9 @@
                         <td>Age</td>
                         <td>22</td>
                       </tr>
-                   
-                         <tr>
-                             <tr>
+					  <tr>
                         <td>Gender</td>
-                        <td>Male</td>
+                        <td>$loggedInUser->gender</td>
                       </tr>
                       <tr>
                         <td>Email</td>

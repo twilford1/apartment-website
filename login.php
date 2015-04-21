@@ -67,6 +67,9 @@
 						$loggedInUser->title = $userdetails["title"];
 						$loggedInUser->displayname = $userdetails["display_name"];
 						$loggedInUser->username = $userdetails["user_name"];
+						$loggedInUser->gender = $userdetails["gender"];
+						$loggedInUser->private_profile = $userdetails["private_profile"];
+						$loggedInUser->description = $userdetails["description"];
 						
 						//Update last sign in
 						$loggedInUser->updateLastSignIn();
