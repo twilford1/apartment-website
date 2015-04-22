@@ -6,7 +6,7 @@
 		public $contents = NULL;
 		
 		//Function used for replacing hooks in our templates
-		public function newTemplateMsg($template,$additionalHooks)
+		public function newTemplateMsg($template, $additionalHooks)
 		{
 			global $mail_templates_dir,$debug_mode;
 			
@@ -29,9 +29,9 @@
 			}
 		}
 		
-		public function sendMail($email,$subject,$msg = NULL)
+		public function sendMail($email, $subject, $msg = NULL)
 		{
-			global $websiteName,$emailAddress;
+			global $websiteName, $emailAddress;
 			
 			$header = "MIME-Version: 1.0\r\n";
 			$header .= "Content-type: text/plain; charset=iso-8859-1\r\n";
@@ -45,7 +45,7 @@
 			
 			$message = wordwrap($message, 70);
 			
-			return mail($email,$subject,$message,$header);
+			return mail($email, $subject, $message, $header);
 		}
 	}
 

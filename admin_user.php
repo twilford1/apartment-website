@@ -187,7 +187,10 @@
 	$permissionData = fetchAllPermissions();
 	require_once("models/header.php");
 	
-	echo "<center>".resultBlock($errors, $successes)."</center>";
+	echo "<center>";
+	echo resultBlock($errors, $successes);
+	echo "</center>";
+	
 	echo "
 	
 	<div class='page-header'>

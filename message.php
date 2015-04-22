@@ -44,27 +44,34 @@
 		}
 		else
 		{
+			// Handling an accept or deny from a permission request
 			if(isset($_POST['grantRequest']))
 			{
-				//TODO
-				//move user to permission group
-				//delete messages
-				//email admins/user
+				if(strpos($message['subject'], "Admin Request") !== false)
+				{
+					addPermission(2, $message['sender_id']);
+					removePermission(1, $message['sender_id']);
+				}
+				elseif(strpos($message['subject'], "Landlord Request") !== false)
+				{
+					addPermission(3, $message['sender_id']);
+					removePermission(1, $message['sender_id']);
+				}
+				
+				emailAdmins($message['sender_id'], $message['subject']." granted", fetchUsername($loggedInUser->user_id)." has granted the following request:\r\n\r\n".$message['message']."\r\n\r\n This change will be applied the next time you login");
+				deleteMessages($message['sender_id'], $message['subject'], $message['message']);
 				$successes = [0 => "Permission Granted"];
-				header("Refresh: 1;url=messages.php?m=inbox");
+				header("Refresh: 2;url=messages.php?m=inbox");
 			}
 			if(isset($_POST['denyRequest']))
 			{
-				//TODO
-				//delete messages
-				//email admins/user
+				emailAdmins($message['sender_id'], $message['subject']." denied", fetchUsername($loggedInUser->user_id)." has denied the following request:\r\n\r\n".$message['message']);
+				deleteMessages($message['sender_id'], $message['subject'], $message['message']);
 				$successes = [0 => "Permission Denied"];
-				header("Refresh: 1;url=messages.php?m=inbox");
+				header("Refresh: 2;url=messages.php?m=inbox");
 			}
 			
-			
-			
-			
+						
 			// If the message was sent to you then that means you are
 			// replying, so the new recipient is the old sender
 			if($loggedInUser->user_id == $message['recipient_id'])

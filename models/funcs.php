@@ -1968,7 +1968,7 @@
 					$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'wasRead' => $wasRead, 'draft' => $draft);
 				}
 			}
-			else if($mailbox == "sent")
+			elseif($mailbox == "sent")
 			{
 				if($draft != 1)
 				{
@@ -2122,6 +2122,26 @@
 		}
 	}
 	
+	// Deletes all messages from the sender with the exact subject, message,
+	// and was sent to an admin
+	function deleteMessages($sender_id, $subject, $message)
+	{
+		
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("DELETE FROM ".$db_table_prefix."messages 
+			WHERE 
+			sender_id = ?
+			AND
+			subject = ?
+			AND
+			message = ?");
+		$stmt->bind_param("iss", $sender_id, $subject, $message);
+		$result = $stmt->execute();
+		$stmt->close();
+		return $result;
+	}
+	
+	
 	//Return true if the message is a permission request
 	function isRequest($id)
 	{
@@ -2208,6 +2228,41 @@
 			}
 		}		
 		return $sent;
+	}
+	
+	//Retrieve information for all users
+	function emailAdmins($sender_id, $subject, $message)
+	{	
+		$admins = fetchPermissionUsers(2);
+		foreach ($admins as $a)
+		{
+			$mail = new userCakeMail();	
+			$mail->sendMail(fetchEmail($a['user_id']), $subject, $message);
+		}
+		
+		$mail = new userCakeMail();	
+		$mail->sendMail(fetchEmail($sender_id), $subject, $message);
+	}
+	
+	//Return the email given the specified user ID
+	function fetchEmail($id = NULL)
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			email
+			FROM ".$db_table_prefix."users
+			WHERE id = ?
+			LIMIT 1");
+			$stmt->bind_param("i", $id);
+		$stmt->execute();
+		$stmt->bind_result($email);
+		$row = null;
+		while ($stmt->fetch())
+		{
+			$row = $email;
+		}
+		$stmt->close();
+		return ($row);
 	}
 	
 	//Check if a user has already sent a permission Request
@@ -2385,7 +2440,7 @@
 					$row[] = array('id' => $id);
 				}
 			}
-			else if($mailbox == "sent")
+			elseif($mailbox == "sent")
 			{
 				if($draft != 1)
 				{
