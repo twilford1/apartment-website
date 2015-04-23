@@ -1259,6 +1259,7 @@
 	//Retrieve the apartment listings for the given search term
 	function fetchListings($search = null)
 	{
+		error_log("-*-*-*-*-*-*-*-*-*-*");
 		global $mysqli, $db_table_prefix; 
 		$stmt = $mysqli->prepare("SELECT 
 			apartment_id,
@@ -1286,18 +1287,20 @@
 			
 		if($search != null)
 		{
+			error_log("Search term: ".$search);
 			if(isset($row))
 			{
 				$terms = explode(" ", $search);
 				$rowLength = count($row);
-				
+				error_log("# of terms: ".count($terms));
 				for($i = 0; $i < $rowLength; $i++)
 				{
 					$matchFound = false;
 					foreach($terms as $t)
-					{
+					{						
 						if(contains($row[$i]['name'], $t) || contains($row[$i]['address'], $t) || contains($row[$i]['description'], $t))
 						{
+							error_log("Match found - ".$t." in ID ".$row[$i]['apartment_id']);
 							$matchFound = true;
 						}
 					}
@@ -1315,7 +1318,8 @@
 	
 	function contains($statement, $term)
 	{
-		if(strpos(strtolower($statement), strtolower($term)) != false)
+		//error_log("Checking: ".$statement." --against-- ".$term);
+		if(strpos(strtolower($statement), strtolower($term)) !== false)
 		{
 			return true;
 		}
