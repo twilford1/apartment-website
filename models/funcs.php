@@ -2196,13 +2196,14 @@
 	{		
 		global $mysqli, $db_table_prefix; 
 		$stmt = $mysqli->prepare("SELECT 
-			*
+			id,
+			wasRead
 			FROM ".$db_table_prefix."messages
 			WHERE recipient_id = ?
 			");
 		$stmt->bind_param("i", $user_id);
 		$stmt->execute();
-		$stmt->bind_result($id, $sender_id, $recipient_id, $subject, $message, $timestamp, $wasRead, $draft);
+		$stmt->bind_result($id, $wasRead);
 		$total = 0;
 		while ($stmt->fetch())
 		{
@@ -2213,6 +2214,64 @@
 		}
 		$stmt->close();
 		return ($total);
+	}
+	
+	//Retrieve the message count
+	function messageCount($user_id, $type)
+	{
+		switch ($type)
+		{
+			case "Sent":
+				$column = "sender_id";
+				break;
+			case "Received":
+				$column = "recipient_id";
+				break;
+			default:
+				return "-";
+		}
+		
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			id
+			FROM ".$db_table_prefix."messages
+			WHERE
+			$column = ?
+			");
+			$stmt->bind_param("i", $user_id);
+		$stmt->execute();
+		$stmt->bind_result($id);
+		$row = null;
+		while ($stmt->fetch())
+		{
+			$row[] = array($id);
+		}
+		$stmt->close();
+		return count($row);
+	}
+	
+	//Retrieve a user's review count
+	function reviewStats($user_id)
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			apartment_id,
+			rating
+			FROM ".$db_table_prefix."apt_reviews
+			WHERE
+			user_id = ?
+			");
+			$stmt->bind_param("i", $user_id);
+		$stmt->execute();
+		$stmt->bind_result($id, $rating);
+		
+		$row = null;
+		while ($stmt->fetch())
+		{
+			$row[] = array('id' => $id, 'rating' => $rating);
+		}
+		$stmt->close();
+		return ($row);
 	}
 	
 	//Retrieve information for all users

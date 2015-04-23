@@ -8,7 +8,7 @@
 		
 	require_once("models/header.php");	
 	
-	
+	/*
 	echo "
 	<center>
 		<div style='width:700px;'>
@@ -95,6 +95,256 @@
       </div>
     </div>
 	</center>";
+	*/
+	
+	
+	echo "
+	<div class='page-header'>
+		<h1>
+			".$loggedInUser->username."
+		</h1>
+	</div>	
+	
+	<div class='container target'>
+        
+		<div class='row'>
+            <div class='col-sm-3'>
+                <!--left col-->
+				
+				<center>
+					<a href='#'>
+						<img class='img-circle img-responsive' src='".get_gravatar( $loggedInUser->email, 120, 'mm','x', false )."' title='profile image'>
+					</a>
+					<br>
+					<a href ='messages.php?m=inbox' class='btn btn-primary'>Messages</a>
+					<a href ='user_settings.php' class='btn btn-primary'>Settings</a>
+					<br>
+					<br>
+				</center>
+				
+                <ul class='list-group'>
+                    <li class='list-group-item text-muted' contenteditable='false'>Profile</li>
+
+                    <li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Joined</strong>
+						</span>
+						".date("M d, Y", $loggedInUser->signupTimeStamp())."
+					</li>
+
+                    <li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Last seen</strong>
+						</span>
+						".date("M d, Y", $loggedInUser->last_sign_in)."
+					</li>
+
+                    <li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Real name</strong>
+						</span>
+						".$loggedInUser->displayname."
+					</li>
+
+					<li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Title</strong>
+						</span>
+						".$loggedInUser->title."
+					</li>
+					
+					<li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Gender</strong>
+						</span>
+						".$loggedInUser->gender."
+					</li>
+					
+                    <li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Email</strong>
+						</span>
+						".$loggedInUser->email."
+					</li>
+                </ul>
+				
+                <div class='panel panel-default'>
+                    <div class='panel-heading'>
+                        Unread Messages
+                    </div>
+
+                    <div class='panel-body'>";
+						$uCount = unreadCount($loggedInUser->user_id);
+						if($uCount > 0)
+						{
+							if($uCount == 1)
+							{
+								echo "<a href='messages.php?m=inbox'>".$uCount." unread message</a>";
+							}
+							else
+							{
+								echo "<a href='messages.php?m=inbox'>".$uCount." unread messages</a>";
+							}
+						}
+						else
+						{
+							echo "You have no unread messages";
+						}
+					echo "    
+                    </div>
+                </div>";
+				
+				$rStats = reviewStats($loggedInUser->user_id);
+				$ratingCount = 0;
+				$ratingAverage = 0;
+				foreach($rStats as $r)
+				{
+					if(isset($r['rating']))
+					{
+						$ratingCount++;
+						$ratingAverage += $r['rating'];
+					}
+				}
+				if($ratingCount > 0)
+				{
+					$ratingAverage = $ratingAverage / $ratingCount;
+				}
+				
+				echo "
+                <ul class='list-group'>
+                    <li class='list-group-item text-muted'>
+						Profile Stats
+					</li>
+
+                    <li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Reviews</strong>
+						</span>
+						".count($rStats)."
+					</li>
+
+                    <li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Ratings Count</strong>
+						</span>
+						".$ratingCount."
+					</li>
+					
+					<li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Average Rating</strong>
+						</span>
+						".number_format($ratingAverage, 1, '.', '')."
+					</li>
+					
+					<li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Sent Messages</strong>
+						</span>
+						".messageCount($loggedInUser->user_id, "Sent")."
+					</li>
+					
+					<li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Sent Recieved</strong>
+						</span>
+						".messageCount($loggedInUser->user_id, "Received")."
+					</li>
+                </ul>
+				
+            </div><!--/col-3-->
+
+            <div class='col-sm-9' contenteditable='false' style=''>
+                <div class='panel panel-default'>
+                    <div class='panel-heading'>
+                        ".$loggedInUser->username." Bio
+                    </div>
+
+                    <div class='panel-body'>";
+						if(isset($loggedInUser->description))
+						{
+							echo $loggedInUser->description;
+						}
+						else
+						{
+							echo "Your profile description goes here. This can be updated from the <a href='user_settings.php'>user settings</a> page";
+						}
+                    echo "
+                    </div>
+                </div>
+
+                <div class='panel panel-default target'>
+                    <div class='panel-heading' contenteditable='false'>
+                        Panel Title
+                    </div>
+
+                    <div class='panel-body'>
+                        <div class='row'>
+                            <div class='col-md-4'>
+                                <div class='thumbnail'>
+                                    <img alt='300x200' src=
+                                    'http://lorempixel.com/600/200/people'>
+
+                                    <div class='caption'>
+                                        <h3>Stuff</h3>
+
+                                        <p>Cocker Spaniel who loves treats.</p>
+
+                                        <p></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class='col-md-4'>
+                                <div class='thumbnail'>
+                                    <img alt='300x200' src=
+                                    'http://lorempixel.com/600/200/city'>
+
+                                    <div class='caption'>
+                                        <h3>Stuffs</h3>
+
+                                        <p>Is just another friendly dog.</p>
+
+                                        <p></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class='col-md-4'>
+                                <div class='thumbnail'>
+                                    <img alt='300x200' src=
+                                    'http://lorempixel.com/600/200/sports'>
+
+                                    <div class='caption'>
+                                        <h3>Stuffss</h3>
+
+                                        <p>Loves catnip and naps. Not fond of
+                                        children.</p>
+
+                                        <p></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class='panel panel-default'>
+                    <div class='panel-heading'>
+                        More Stuff
+                    </div>
+
+                    <div class='panel-body'>
+                        Stuff about stuff and stuff
+                    </div>
+                </div>
+            </div>
+
+            <div id='push'></div>
+        </div>
+    </div>";
+	
+	
 	
 	include 'models/footer.php';
 ?>

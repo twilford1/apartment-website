@@ -70,6 +70,7 @@
 						$loggedInUser->gender = $userdetails["gender"];
 						$loggedInUser->private_profile = $userdetails["private_profile"];
 						$loggedInUser->description = $userdetails["description"];
+						$loggedInUser->last_sign_in = $userdetails["last_sign_in_stamp"];
 						
 						//Update last sign in
 						$loggedInUser->updateLastSignIn();
