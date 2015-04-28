@@ -174,10 +174,10 @@
 					<br>
 					<br>
 					<a href='https://en.gravatar.com/emails/' class='btn btn-primary' title='Use $loggedInUser->email for gravatar'>Change Picture</a>
+					<br><br>
+					<a href='http://www.apartment.duckdns.org/roommates.php' class='btn btn-primary' title='Manage roommates'>Manage roommates</a>
 			   </div>
 			</div>
-			<br>
-			<br>
 			<br>
 			<div class='form-group'>
 				<label class='col-sm-5 control-label'>Current Password</label>

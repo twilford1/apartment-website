@@ -37,7 +37,8 @@
 						<li><a href='apartment_listings.php'>Listings</a></li>
 						<li><a href='landlords_list.php'>Landlords</a></li>
 						<li><a href='map.php'>Map</a></li>
-						<li><a href='costs.php'>Roommate Costs</a></li>";
+						<li><a href='guides.php'>Guides</a></li>
+						<li><a href='costs.php'>Roommates</a></li>";
 						
 						//Links for permission level 2 (default admin)
 						if ($loggedInUser->checkPermission(array(2)))
@@ -64,7 +65,9 @@
 						<li><a href='login.php'>Login</a></li>
 						<li><a href='register.php'>Register</a></li>
 						<li><a href='apartment_listings.php'>Listings</a></li>
-						<li><a href='map.php'>Map</a></li>";
+						<li><a href='landlords_list.php'>Landlords</a></li>
+						<li><a href='map.php'>Map</a></li>
+						<li><a href='guides.php'>Guides</a></li>";
 						
 						if ($emailActivation)
 						{

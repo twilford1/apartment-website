@@ -8,7 +8,7 @@
 
 	
 	//Forms posted
-	if(!empty($_POST))
+	if(!empty($_POST['upload_image_submit']))
 	{
 		$errors = array();
 		$file = $_FILES['uploaded_image']['tmp_name'];
@@ -38,6 +38,28 @@
 
 	}
 	
+	if(!empty($_POST['choose_flaw_submit']))
+	{
+		$errors = array();
+		
+		/*if()
+			echo "Please select an image.";
+		else
+		{
+			
+			
+		}
+		
+		if()
+			$errors[] = lang("IMAGE_INVALID_TYPE");
+		else
+		{
+			
+		}
+		//End data validation*/
+
+	}
+	
 	require_once("models/header.php");
 	
 	echo "<center>";
@@ -48,7 +70,7 @@
 		<form class='form-horizontal' name='newImage' action='' method='post' enctype='multipart/form-data'>
 			<div class='form-group'>
 				<div class='col-sm-offset-3 col-sm-9'>
-					<h2>Upload Images</h2>
+					<h2>Upload A Image</h2>
 				</div>
 			</div>
 			<div class='form-group'>
@@ -60,7 +82,9 @@
 
 			<div class='form-group'>
 				<div class='col-sm-offset-3 col-sm-9'>
-					<button type='submit' class='btn btn-primary' name='upload_image'>Upload</button>
+					<button type='submit' class='btn btn-primary' name='upload_image_submit'>Upload</button>
+					<br><br>
+					<a href='apt_eval_guide.php' class='btn btn-primary' name='Walkthrough Checklist'>Back to checklist</a>
 				</div>
 			</div>
 			
@@ -80,7 +104,18 @@
 	echo "</center>";
 	echo "<center>";
 	//echo getImage(7);
-	echo getLastImage();
+	getLastImage();
+	///***************************************
+	//  TODO
+	// 	* getLastImage  X
+	//  * Post property page adding deposits row	X
+	//  * Flaws documenting page (Document flaws button)
+	//  * Flaws showing page  (View flaws button)
+	///***************************************
+	
+	
+	
+	
 	echo "</center>";
 	include 'models/footer.php';
 ?>

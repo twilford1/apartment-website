@@ -15,6 +15,7 @@
 		$num_bedrooms = (int)$_POST["num_bedrooms"];
 		$num_bathrooms = (int)$_POST["num_bathrooms"];
 		$price = (double)$_POST["price"];
+		$deposit = (double)$_POST["deposit"];
 		$description = trim($_POST["description"]);
 		
 		if(minMaxRange(5, 25, $name))
@@ -32,7 +33,7 @@
 		if(count($errors) == 0)
 		{	
 			//Construct an apartment object
-			$apartment = createApartment($name, $address, NULL, NULL, $num_bedrooms, $num_bathrooms, 1,$price, NULL, $description, "available");
+			$apartment = createApartment($name, $address, NULL, NULL, $num_bedrooms, $num_bathrooms, 1,$price, $deposit, $description, "available");
 			
 			//Checking this flag tells us whether there were any errors such as possible data duplication occured
 			/*if(!$user->status)
@@ -102,6 +103,13 @@
 				<label class='col-sm-3 control-label'>Price</label>
 				<div class='col-sm-9'>
 					<input type='number' class='form-control' name='price' min='0' max='10000' placeholder='$0.00'>
+				</div>
+			</div>
+			
+			<div class='form-group'>
+				<label class='col-sm-3 control-label'>Deposit</label>
+				<div class='col-sm-9'>
+					<input type='number' class='form-control' name='deposit' min='0' max='10000' placeholder='$0.00'>
 				</div>
 			</div>
 

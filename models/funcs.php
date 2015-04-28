@@ -1,5 +1,8 @@
 <?php
 
+	//ADDED BY MATTIE: Start tag of code to be ignored in Xdebug code coverage
+	// @codeCoverageIgnoreStart
+
 	//Functions that do not interact with DB
 	//------------------------------------------------------------------------------
 
@@ -1186,6 +1189,9 @@
 		}
 	}
 	
+// ADDED BY MATTIE: end tag for code to be ignored in Xdebug coverage
+// @codeCoverageIgnoreEnd
+	
 	//Retrieve the apartment listings for the given search term
 	//*************NEEDED FOR MAP.PHP!!!****************
 	function fetchListingsWithTerms($terms = NULL)
@@ -1383,6 +1389,37 @@
 		}
 		$stmt->close();
 		return ($row);
+	}
+	
+	//Add a new roommate for the user
+	function addRoommate($user_id, $roommate_id)
+	{
+		global $mysqli, $db_table_prefix;
+		//Insert the message into the database
+		$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."roommates (
+			user_id,
+			roommate_id
+			)
+			VALUES (
+			?,
+			?
+			)");		
+		$stmt->bind_param("ii", $user_id, $roommate_id);
+		$result = $stmt->execute();
+		$stmt->close();	
+		return $result;
+	}
+	
+	//Delete the specified roommate
+	function removeRoommate($user_id, $roommate_id)
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("DELETE FROM ".$db_table_prefix."roommates
+			WHERE user_id = ? AND roommate_id = ?");
+		$stmt->bind_param("ii", $user_id, $roommate_id);
+		$result = $stmt->execute();
+		$stmt->close();
+		return $result;
 	}
 	
     //Fetches apartments in a certain radius of Iowa City for the map.php page
@@ -1666,9 +1703,10 @@
 		return ($row);
 	}
 	
+	//fetches the cost by its cost id
 	function fetchCostById($cost_id)
 	{
-		// Return all debts for this user
+		// Return the specified cost
 		global $mysqli, $db_table_prefix; 
 		$stmt = $mysqli->prepare("SELECT *
 			FROM ".$db_table_prefix."costs
@@ -1817,7 +1855,7 @@
 		}
 	}
 	
-	//Retrieve the details for the apartment listing
+	//Retrieve the details for the landlord
 	function fetchLandlordDetails($id)
 	{
 		// Return specified listing
@@ -1841,6 +1879,9 @@
 		$stmt->close();
 		return ($row);
 	}
+
+//ADDED BY MATTIE: Start tag of code to be ignored in Xdebug code coverage
+// @codeCoverageIgnoreStart
 	
 	//Return the username given the specified user ID
 	function fetchUsername($id = NULL)
@@ -1919,6 +1960,9 @@
 			}
 		}
 	}
+	
+// ADDED BY MATTIE: end tag for code to be ignored in Xdebug coverage
+// @codeCoverageIgnoreEnd
 	
 	function get_gravatar($email, $s = 80, $d = 'mm', $r = 'g', $img = false, $atts = array())
 	{
@@ -2670,6 +2714,50 @@
 		
 	}
 	
+	//Echo the image given selected apartment id
+	function getImageAptID($id)
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT image FROM ".$db_table_prefix."images WHERE apartment_id=?");
+			
+		$stmt->bind_param("i",$id);
+		$stmt->execute();
+		$stmt->store_result();
+		$stmt->bind_result($showimage);
+		$stmt->fetch();
+		if(!isset($showimage))
+		{
+			echo "No flaws reported";
+		}
+		else{
+			echo '<img src="data:image/jpeg;base64,'.base64_encode($showimage).'"/>';	
+		}
+		//header("Content-Type: image/jpeg");
+	
+		$stmt->close();	
+		
+	}
+
+	//Echo the last added image
+	function getLastImage()
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT image FROM ".$db_table_prefix."images ORDER BY id DESC LIMIT 1");
+			
+		//$stmt->bind_param("i",$id);
+		$stmt->execute();
+		$stmt->store_result();
+		$stmt->bind_result($showimage);
+		$stmt->fetch();
+
+
+		echo '<img src="data:image/jpeg;base64,'.base64_encode($showimage).'"/>';	
+
+		//header("Content-Type: image/jpeg");
+	
+		$stmt->close();	
+		
+	}	
 	//Delete an image from the DB
 	function deleteImage($id){
 		global $mysqli,$db_table_prefix; 
@@ -2682,5 +2770,100 @@
 		$stmt->close();
 		return $result;
 
+	}
+	//--------------------------------------------------------------
+	// Functions for Apt Reviews 
+	
+	//Review functions DO NOT DELETE PLEASE
+	function getLLReviews($id) {
+		// Return all landlord reviews
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			review_id,
+			landlord_id,
+			user_id,
+			review,
+			rating
+			FROM ".$db_table_prefix."ll_reviews
+			WHERE landlord_id = ?");
+		$stmt->bind_param("i", $id);
+		$stmt->execute();
+		$stmt->bind_result($review_id, $landlord_id, $user_id, $review, $rating);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('review_id' => $review_id, 'landlord_id' => $landlord_id, 'user_id' => $user_id, 'review' => $review, 'rating' => $rating);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	function getAptReviews($id) {
+		// Return all apartment reviews
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			review_id,
+			apartment_id,
+			user_id,
+			review,
+			rating
+			FROM ".$db_table_prefix."apt_reviews
+			WHERE apartment_id = ?");
+		$stmt->bind_param("i", $id);
+		$stmt->execute();
+		$stmt->bind_result($review_id, $apartment_id, $user_id, $review, $rating);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('review_id' => $review_id, 'apartment_id' => $landlord_id, 'user_id' => $user_id, 'review' => $review, 'rating' => $rating);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	// Add a review to the landlord reviews table
+	function createLandlordReview($landlord_id, $user_id, $review, $rating)
+	{		
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."ll_reviews (
+			landlord_id,
+			user_id,
+			review,
+			rating
+			)
+			VALUES (
+			?,
+			?,
+			?,
+			?
+			)");
+
+		$stmt->bind_param("iisi", $landlord_id, $user_id, $review, $rating); // s for string i for integer 
+		$result = $stmt->execute();
+		$stmt->close();	
+		return $result;
+	}
+	
+	// Add a review to the apartment reviews table
+	function createApartmentReview($apartment_id, $user_id, $review, $rating)
+	{		
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("INSERT INTO ".$db_table_prefix."apt_reviews (
+			apartment_id,
+			user_id,
+			review,
+			rating
+			)
+			VALUES (
+			?,
+			?,
+			?,
+			?
+			)");
+
+		$stmt->bind_param("iisi", $apartment_id, $user_id, $review, $rating); // s for string i for integer 
+		$result = $stmt->execute();
+		$stmt->close();	
+		return $result;
 	}
 ?>

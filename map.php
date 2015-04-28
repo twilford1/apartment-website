@@ -1,5 +1,5 @@
 <!--
-Iowa City Google Maps php page
+Iowa City Apartment App: Google Maps php page
 by Mattie Fickel 
 
 Resources: 

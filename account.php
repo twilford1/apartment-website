@@ -5,103 +5,29 @@
 	{
 		die();
 	}
-		
-	require_once("models/header.php");	
+
+	if(!empty($_GET))
+	{
+		$userId = $_GET['id'];
+		if(!userIdExists($userId))
+		{
+			header("Location: account.php");
+			die();
+		}
+	}
+	else
+	{
+		$userId = $loggedInUser->user_id;
+	}
 	
-	/*
-	echo "
-	<center>
-		<div style='width:700px;'>
-			<div class='jumbotron'>
-				<h2>Hello $loggedInUser->displayname</h2>
-				<h2>Welcome to Apartment Finder!</h2>
-				<br>
-				<h4>
-					User title: $loggedInUser->title
-					<br>
-					<br>
-					Registered on: ".date("M d, Y", $loggedInUser->signupTimeStamp())."
-					<br>
-					<br>
-					Private Profile: ".$loggedInUser->private_profile."
-					<br>
-					<br>
-					Description: ".$loggedInUser->description."
-				</h4>
-			</div>
-		</div>
-		
-		<br>
-		<br>
-		
-		<div class='container'>
-      <div class='row'>
-      
-        <div class='col-xs-12 col-sm-12 col-md-6 col-lg-6 col-xs-offset-0 col-sm-offset-0 col-md-offset-3 col-lg-offset-3 toppad' >
-   
-   
-          <div class='panel panel-info'>
-            <div class='panel-heading'>
-              <h3 class='panel-title'>$loggedInUser->displayname</h3>
-            </div>
-            <div class='panel-body'>
-              <div class='row'>
-                <div class='col-md-3 col-lg-3 ' align='center'> <img alt='User Pic' src=".get_gravatar( $loggedInUser->email, 80, 'mm','x', false )." class='img-circle'> </div>
-                
-
-                <div class=' col-md-9 col-lg-9 '> 
-                  <table class='table table-user-information'>
-                    <tbody>
-                      <tr>
-                        <td>Been a member since:</td>
-                        <td>".date("M d, Y", $loggedInUser->signupTimeStamp())."</td>
-                      </tr>
-                      <tr>
-                        <td>Age</td>
-                        <td>22</td>
-                      </tr>
-					  <tr>
-                        <td>Gender</td>
-                        <td>$loggedInUser->gender</td>
-                      </tr>
-                      <tr>
-                        <td>Email</td>
-                        <td><a href='mailto:$loggedInUser->email'>$loggedInUser->email</a></td>
-                      </tr>
-
-                           
-                      </tr>
-                     
-                    </tbody>
-                  </table>
-                  
-                  <a href='user_settings.php' class='btn btn-primary'>Edit Profile</a>
-
-                </div>
-              </div>
-            </div>
-                 <!--
-				 <div class='panel-footer'>
-							<a data-original-title='Broadcast Message' data-toggle='tooltip' type='button' class='btn btn-sm btn-primary'><i class='glyphicon glyphicon-envelope'></i></a>
-                        
-						<span class='pull-right'>
-                            <a href='edit.html' data-original-title='Edit this user' data-toggle='tooltip' type='button' class='btn btn-sm btn-warning'><i class='glyphicon glyphicon-edit'></i></a>
-                            <a data-original-title='Remove this user' data-toggle='tooltip' type='button' class='btn btn-sm btn-danger'><i class='glyphicon glyphicon-remove'></i></a>
-                        </span>
-                    </div> -->
-            
-          </div>
-        </div>
-      </div>
-    </div>
-	</center>";
-	*/
+	$userDetails = fetchUserDetails(NULL, NULL, $userId);
 	
+	require_once("models/header.php");
 	
 	echo "
 	<div class='page-header'>
 		<h1>
-			".$loggedInUser->username."
+			".$userDetails['user_name']."
 		</h1>
 	</div>	
 	
@@ -113,11 +39,23 @@
 				
 				<center>
 					<a href='#'>
-						<img class='img-circle img-responsive' src='".get_gravatar( $loggedInUser->email, 120, 'mm','x', false )."' title='profile image'>
+						<img class='img-circle img-responsive' src='".get_gravatar($userDetails['email'], 120, 'mm','x', false )."' title='profile image'>
 					</a>
-					<br>
-					<a href ='messages.php?m=inbox' class='btn btn-primary'>Messages</a>
-					<a href ='user_settings.php' class='btn btn-primary'>Settings</a>
+					<br>";
+					
+					if($userId == $loggedInUser->user_id)
+					{
+						echo "
+						<a href ='messages.php?m=inbox' class='btn btn-primary'>Messages</a>
+						<a href ='user_settings.php' class='btn btn-primary'>Settings</a>";
+					}
+					else
+					{
+						echo "
+						<a href ='messages.php?m=inbox' class='btn btn-primary'>Send Message</a>";
+					}
+					
+					echo "
 					<br>
 					<br>
 				</center>
@@ -129,72 +67,82 @@
 						<span class='pull-left'>
 							<strong class=''>Joined</strong>
 						</span>
-						".date("M d, Y", $loggedInUser->signupTimeStamp())."
+						".date("M d, Y", $userDetails['sign_up_stamp'])."
 					</li>
 
                     <li class='list-group-item text-right'>
 						<span class='pull-left'>
 							<strong class=''>Last seen</strong>
 						</span>
-						".date("M d, Y", $loggedInUser->last_sign_in)."
+						".date("M d, Y", $userDetails['last_sign_in_stamp'])."
 					</li>
 
                     <li class='list-group-item text-right'>
 						<span class='pull-left'>
 							<strong class=''>Real name</strong>
 						</span>
-						".$loggedInUser->displayname."
-					</li>
-
-					<li class='list-group-item text-right'>
-						<span class='pull-left'>
-							<strong class=''>Title</strong>
-						</span>
-						".$loggedInUser->title."
-					</li>
+						".$userDetails['display_name']."
+					</li>";
 					
-					<li class='list-group-item text-right'>
-						<span class='pull-left'>
-							<strong class=''>Gender</strong>
-						</span>
-						".$loggedInUser->gender."
-					</li>
-					
-                    <li class='list-group-item text-right'>
-						<span class='pull-left'>
-							<strong class=''>Email</strong>
-						</span>
-						".$loggedInUser->email."
-					</li>
-                </ul>
+					if($userDetails['private_profile'] == 0)
+					{
+						echo "
+						<li class='list-group-item text-right'>
+							<span class='pull-left'>
+								<strong class=''>Title</strong>
+							</span>
+							".$userDetails['title']."
+						</li>
+						
+						<li class='list-group-item text-right'>
+							<span class='pull-left'>
+								<strong class=''>Gender</strong>
+							</span>
+							".$userDetails['gender']."
+						</li>
+						
+						<li class='list-group-item text-right'>
+							<span class='pull-left'>
+								<strong class=''>Email</strong>
+							</span>
+							".$userDetails['email']."
+						</li>";
+					}
 				
-                <div class='panel panel-default'>
-                    <div class='panel-heading'>
-                        Unread Messages
-                    </div>
+				echo "
+                </ul>";
+				
+				if($userId == $loggedInUser->user_id)
+				{
+					echo "
+					<div class='panel panel-default'>
+						<div class='panel-heading'>
+							Unread Messages
+						</div>
 
-                    <div class='panel-body'>";
-						$uCount = unreadCount($loggedInUser->user_id);
-						if($uCount > 0)
-						{
-							if($uCount == 1)
+						<div class='panel-body'>";
+							$uCount = unreadCount($userDetails['id']);
+							if($uCount > 0)
 							{
-								echo "<a href='messages.php?m=inbox'>".$uCount." unread message</a>";
+								if($uCount == 1)
+								{
+									echo "<a href='messages.php?m=inbox'>".$uCount." unread message</a>";
+								}
+								else
+								{
+									echo "<a href='messages.php?m=inbox'>".$uCount." unread messages</a>";
+								}
 							}
 							else
 							{
-								echo "<a href='messages.php?m=inbox'>".$uCount." unread messages</a>";
+								echo "You have no unread messages";
 							}
-						}
-						else
-						{
-							echo "You have no unread messages";
-						}
-					echo "    
-                    </div>
-                </div>";
+						echo "    
+						</div>
+					</div>";
+				}
 				
-				$rStats = reviewStats($loggedInUser->user_id);
+				$rStats = reviewStats($userDetails['id']);
 				$ratingCount = 0;
 				$ratingAverage = 0;
 				foreach($rStats as $r)
@@ -235,21 +183,26 @@
 							<strong class=''>Average Rating</strong>
 						</span>
 						".number_format($ratingAverage, 1, '.', '')."
-					</li>
+					</li>";
 					
-					<li class='list-group-item text-right'>
-						<span class='pull-left'>
-							<strong class=''>Sent Messages</strong>
-						</span>
-						".messageCount($loggedInUser->user_id, "Sent")."
-					</li>
-					
-					<li class='list-group-item text-right'>
-						<span class='pull-left'>
-							<strong class=''>Sent Recieved</strong>
-						</span>
-						".messageCount($loggedInUser->user_id, "Received")."
-					</li>
+					if($userId == $loggedInUser->user_id)
+					{
+						echo "
+						<li class='list-group-item text-right'>
+							<span class='pull-left'>
+								<strong class=''>Sent Messages</strong>
+							</span>
+							".messageCount($userDetails['id'], "Sent")."
+						</li>
+						
+						<li class='list-group-item text-right'>
+							<span class='pull-left'>
+								<strong class=''>Sent Recieved</strong>
+							</span>
+							".messageCount($userDetails['id'], "Received")."
+						</li>";
+					}
+				echo "
                 </ul>
 				
             </div><!--/col-3-->
@@ -257,17 +210,24 @@
             <div class='col-sm-9' contenteditable='false' style=''>
                 <div class='panel panel-default'>
                     <div class='panel-heading'>
-                        ".$loggedInUser->username." Bio
+                        ".$userDetails['user_name']."'s Bio
                     </div>
 
                     <div class='panel-body'>";
-						if(isset($loggedInUser->description))
+						if($userDetails['private_profile'] == 0)
 						{
-							echo $loggedInUser->description;
+							if(isset($userDetails['description']))
+							{
+								echo $userDetails['description'];
+							}
+							else
+							{
+								echo "Your profile description goes here. This can be updated from the <a href='user_settings.php'>user settings</a> page";
+							}
 						}
 						else
 						{
-							echo "Your profile description goes here. This can be updated from the <a href='user_settings.php'>user settings</a> page";
+							echo $userDetails['user_name']."'s profile is private";
 						}
                     echo "
                     </div>

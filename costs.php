@@ -1,5 +1,5 @@
 <!--
-Iowa City Google Maps php page
+Iowa City Apartment App: costs php page
 by Mattie Fickel 
 
 Resources: 
@@ -341,12 +341,15 @@ echo '
 						";
 					}
 					
-			  echo '</div>
+			  echo "
+					<br><br>
+					<a href='http://www.apartment.duckdns.org/roommates.php' class='btn btn-primary' title='Manage roommates'>Manage roommates</a>
+					</div>
 				</div>
-				<div class="row clearfix">
+				<div class='row clearfix'>
 				</div>
 			</div>
 		</div>
-	</div>';
+	</div>";
 
 ?>

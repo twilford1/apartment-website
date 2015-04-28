@@ -16,6 +16,7 @@ require_once "models/funcs.php";
  *	-addCost
  *	-updateCost
  *	-deleteCost
+ *	-fetchCostById
  *	-fetchRoommates
  *	-fetchOwedCosts
  *	-fetchDebtCosts
@@ -53,12 +54,12 @@ class CostTest extends PHPUnit_Framework_TestCase
 		/////////////Modify the test database for test cases///////////////
 		
 		//add test roommates
-		insertTestRoommate(-1, -2);
-		insertTestRoommate(-1, -3);
-		insertTestRoommate(-2, -3);
-		insertTestRoommate(-2, -1);
-		insertTestRoommate(-3, -1);
-		insertTestRoommate(-3, -2);
+		insertTestRoommate2(-1, -2);
+		insertTestRoommate2(-1, -3);
+		insertTestRoommate2(-2, -3);
+		insertTestRoommate2(-2, -1);
+		insertTestRoommate2(-3, -1);
+		insertTestRoommate2(-3, -2);
 		
 		//add test costs
 		addTestCost("Delete Me", -1, -2, "", 0, 0, 10.00);
@@ -278,16 +279,42 @@ class CostTest extends PHPUnit_Framework_TestCase
 		echo("\n\n");
 	}
 	
+	//test that the correct cost is fetched using its id
+	public function testFetchCompleteCostById()
+	{
+		//inform the user
+		echo("------------------------\n");
+		echo("CostTest Case 8: testFetchCompleteCostById\n");
+		
+		//add a test cost
+		$cost_description = "Coddswallop";
+		addTestCost($cost_description, -1, -2, "", 0, 0, 10.00);
+		
+		//get the cost by id
+		$cost = getCostByDescription($cost_description);
+		$cost2 = fetchCostById($cost['cost_id']);
+		
+		//delete the test cost
+		deleteTestCost($cost['cost_id']);
+		
+		//assert that the cost id is what was expected
+		$this->assertTrue($cost['cost_description'] == $cost2[0]['cost_description']);
+		
+		echo("Costs can be feteched by their id:\n");
+		echo(($cost['cost_description'] == $cost2[0]['cost_description'])?"PASS":"FAIL");
+		echo("\n\n");
+	}
+	
 	//reset the database after each test
 	public function teardown()
 	{
 		//remove test roommates
-		deleteTestRoommate(-1, -2);
-		deleteTestRoommate(-1, -3);
-		deleteTestRoommate(-2, -3);
-		deleteTestRoommate(-2, -1);
-		deleteTestRoommate(-3, -1);
-		deleteTestRoommate(-3, -2);
+		deleteTestRoommate2(-1, -2);
+		deleteTestRoommate2(-1, -3);
+		deleteTestRoommate2(-2, -3);
+		deleteTestRoommate2(-2, -1);
+		deleteTestRoommate2(-3, -1);
+		deleteTestRoommate2(-3, -2);
 		
 		//remove test costs
 		for($i=0; $i<4; $i++)
@@ -314,9 +341,9 @@ class CostTest extends PHPUnit_Framework_TestCase
 }
 
 /*
- *insertTestRoommate: inserts one roommate tuple
+ *insertTestRoommate2: inserts one roommate tuple
  */
-function insertTestRoommate($user_id, $roommate_id)
+function insertTestRoommate2($user_id, $roommate_id)
 {
 	global $mysqli, $db_table_prefix;
 	//insert apartment
@@ -334,7 +361,7 @@ function insertTestRoommate($user_id, $roommate_id)
 /*
  * getTestRoommate: returns all roommates of a test user
  */
-function getTestRoommates($user_id)
+function getTestRoommates2($user_id)
 {
 	global $mysqli, $db_table_prefix;
 	
@@ -358,9 +385,9 @@ function getTestRoommates($user_id)
 }
 
 /*
- *deleteTestRoommate: deletes a roommate tuple
+ *deleteTestRoommate2: deletes a roommate tuple
  */
-function deleteTestRoommate($user_id, $roommate_id)
+function deleteTestRoommate2($user_id, $roommate_id)
 {
 	global $mysqli, $db_table_prefix;
 	
