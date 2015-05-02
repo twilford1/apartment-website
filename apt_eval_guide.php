@@ -5,6 +5,65 @@
 	{
 		die();
 	}
+/*
+	if(isset($_POST['choose_flaw_submit'])) 
+	{
+		//$_SESSION['post'] = $_POST;
+		getLastImage();
+		//if($_POST['choose_flaw_submit'])
+		//header('Location: image_upload.php');
+	}*/
+	/****************************
+	TODO
+	* get landlord_id, apartment_id
+	*
+	
+	
+	
+	*****************************/
+	//$flaw_description = 'test';
+	
+	//Forms posted
+	if(isset($_POST['choose_flaw_submit']) && !isset($_POST['upload_image_submit'])) 
+	{
+		//$_SESSION['post'] = $_POST;
+		//getLastImage();
+		//if($_POST['choose_flaw_submit'])
+		//header('Location: image_upload.php');
+		$_SESSION['flaw_description'] = $_POST['flaw_sel'];
+		
+	}
+	
+	if(isset($_POST['upload_image_submit']))
+	{
+		$errors = array();
+		
+		$file = $_FILES['uploaded_image']['tmp_name'];
+		if(!isset($file))
+			echo "Please select an image.";
+		else
+		{
+			$image = $_FILES['uploaded_image']['tmp_name'];
+			$image_name = $_FILES['uploaded_image']['name'];
+			$image_size = getimagesize($_FILES['uploaded_image']['tmp_name']);
+			
+		}
+		
+		if($image_size==FALSE)
+			$errors[] = lang("IMAGE_INVALID_TYPE");
+		else
+		{
+			$new_image = uploadImage($image_name, $image, 1,1,$_SESSION['flaw_description']);
+			if(!empty($new_image))
+				$successes[] = lang("IMAGE_UPLOADED");
+			else
+			{
+				$errors[] = lang("IMAGE_UPLOADED_FAILED");
+			}
+		}
+		//End data validation
+
+	}
 	
 	require_once("models/header.php");	
 	
@@ -20,7 +79,7 @@
 			<div class='panel-heading'>
 				<h3 class='panel-title'><b>Select a section from the drop-down list to begin.</b></h3>
 			</div>   
-			<form class='form-horizontal' name='newFlaw' action='image_upload.php' method='post'>
+			<form class='form-horizontal radio' name='newFlaw' action='apt_eval_guide.php' method='post'>
 			<ul class='list-group'>
 				<li class='list-group-item'>
 					<div class='row toggle' id='dropdown-detail-1' data-toggle='detail-1'>
@@ -35,19 +94,19 @@
 							<div class='col-md-4'>
 								<b>Apartment:</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Air-Conditioning</label>
+								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Air-Conditioning</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Ample electrical outlets</label>
+								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Ample electrical outlets</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Privacy</label>
+								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Privacy</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Blinds/curtains</label>
+								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Blinds/curtains</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Cable TV connection</label>
+								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Cable TV connection</label>
 								</div>
 								<div class='radio'>
 								  <label><input type='radio' name='flaw_sel' value=''>Floors (carpet/hardwood)</label>
@@ -77,7 +136,7 @@
 							<div class='col-md-4'>
 								<b>Lease:</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Pets allowed</label>
+								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Pets allowed</label>
 								</div>
 								<div class='radio'>
 								  <label><input type='radio' name='flaw_sel' value=''>Physical changes allowed</label>
@@ -117,7 +176,7 @@
 							<div class='col-md-4'>
 								<b>Community:</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Laundry/Facilities nearby</label>
+								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Laundry/Facilities nearby</label>
 								</div>
 								<div class='radio'>
 								  <label><input type='radio' name='flaw_sel' value=''>Garbage chute/trash removal nearby</label>
@@ -182,7 +241,7 @@
 							<div class='col-md-4'>
 								<b>Shower:</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Broken/leaky shower head</label>
+								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Broken/leaky shower head</label>
 								</div>
 								<div class='radio'>
 								  <label><input type='radio' name='flaw_sel' value=''>Stains</label>
@@ -278,7 +337,7 @@
 							<div class='col-md-4'>
 								<b>Refrigerator:</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Old/outdated</label>
+								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Old/outdated</label>
 								</div>
 								<div class='radio'>
 								  <label><input type='radio' name='flaw_sel' value=''>Working freezer</label>
@@ -386,7 +445,7 @@
 							<div class='col-md-4'>
 								<b>Closet</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Lighting</label>
+								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Lighting</label>
 								</div>
 								<div class='radio'>
 								  <label><input type='radio' name='flaw_sel' value=''>Walk-in</label>
@@ -407,7 +466,7 @@
 							<div class='col-md-4'>
 								<b>Other</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Lighting</label>
+								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Lighting</label>
 								</div>
 								<div class='radio'>
 								  <label><input type='radio' name='flaw_sel' value=''>Space/height</label>
@@ -433,15 +492,41 @@
 				</li>
 			</ul>
 			<br>
-			<center> <button type='submit' class='btn btn-primary' name='choose_flaw_submit'>Select</button> </center>
+			<center> <button type='submit' class='btn btn-primary' name='choose_flaw_submit' id='choose_flaw_submit'>Select</button> </center>
 			<br>
 			</form>
 		</div>
 
 	<div class='container'>
+<center>
+		<div style='width:400px;'>
+			<form class='form-horizontal' name='newImage' action='' method='post' enctype='multipart/form-data'>
+			<div class='form-group'>
+				<div class='col-sm-offset-3 col-sm-9'>
+					<h2>Upload A Image</h2>
+				</div>
+			</div>
+			<div class='form-group'>
+				<label class='col-sm-3 control-label'>File</label>
+				<div class='col-sm-9'>
+					<input type='file' class='form-control' name='uploaded_image'>
+				</div>
+			</div>
 
+			<div class='form-group'>
+				<div class='col-sm-offset-3 col-sm-9'>
+					<button type='submit' class='btn btn-primary' name='upload_image_submit' id='upload_image_submit'>Upload</button>
+					
+				</div>
+			</div>
+			
+			</form>			
+		</div>
+</center>
 	</div>";
-	
+	echo resultBlock($errors,$successes);
+	//getLastImage();
+
 	include 'models/footer.php';
 ?>
 

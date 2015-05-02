@@ -157,6 +157,9 @@
 	echo "</center>";
 	
 	echo "
+	<link rel='stylesheet' href='http://cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.2/css/bootstrapValidator.min.css'/>
+	<script type='text/javascript' src='http://cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.2/js/bootstrapValidator.min.js'></script>
+	
 	<div class='page-header'>
 		<h1>
 			User Settings
@@ -166,7 +169,7 @@
 	<center>
 	
 	<div style='width:500px;'>
-		<form name='updateAccount' class='form-horizontal' action='".$_SERVER['PHP_SELF']."' method='post'>
+		<form name='updateAccount' class='form-horizontal' id='updateUsrAccount' action='".$_SERVER['PHP_SELF']."' method='post'>
 			<div class='form-group'>
 				<label class='col-sm-5 control-label'>Profile Picture</label>
 				<div class='col-sm-7'>
@@ -182,7 +185,7 @@
 			<div class='form-group'>
 				<label class='col-sm-5 control-label'>Current Password</label>
 				<div class='col-sm-7'>
-					<input type='password' class='form-control' name='password' placeholder='Current Password (Required)'>
+					<input type='password' class='form-control' name='password' id='password' placeholder='Current Password (Required)'>
 				</div>
 			</div>
 			<br>
@@ -291,6 +294,30 @@
 	</div>";
 	
 	echo "</center>";
-	
+
+?>
+
+<script>
+	$('#updateUsrAccount').bootstrapValidator({
+		//live: 'disabled',
+        message: 'This value is not valid',
+        feedbackIcons: {
+            //valid: 'glyphicon glyphicon-ok',
+            invalid: 'glyphicon glyphicon-remove',
+            validating: 'glyphicon glyphicon-refresh'
+        },
+        fields: {
+            password: {
+                validators: {
+                    notEmpty: {
+                        message: 'Your password is required and cannot be empty'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+<?php
 	include 'models/footer.php';
 ?>

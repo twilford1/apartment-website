@@ -58,7 +58,10 @@
 	
 	require_once("models/header.php");	
 	
+	echo "<center>";
 	echo resultBlock($errors, $successes);
+	echo "</center>";
+	
 	echo "
 	<style>
 		 .animated {

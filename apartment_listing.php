@@ -112,7 +112,7 @@
 										<tbody>
 											<tr>
 												<td>Landlord:</td>
-												<td>id ".$aptDetails['landlord_id']."</td>
+												<td>".fetchLandlordName($aptDetails['landlord_id'])."</td>
 											</tr>
 											<tr>
 												<td>Address:</td>
@@ -147,7 +147,7 @@
 										</tbody>
 									</table>
 									<center>
-										<a href='#' class='btn btn-primary'>View Landlord</a>
+										<a href='landlord_profile.php?id=".$aptDetails['landlord_id']."' class='btn btn-primary'>View Landlord</a>
 										<a href='#' class='btn btn-primary'>View on Map</a>
 										
 									</center>

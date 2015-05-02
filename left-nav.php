@@ -30,7 +30,8 @@
 							<a href='#' class='dropdown-toggle' data-toggle='dropdown'>Account<span class='caret'></span></a>
 							<ul class='dropdown-menu' role='menu'>
 								<li><a href='account.php'>Account Home</a></li>
-								<li><a href='messages.php?m=inbox'>Messages</a></li>								
+								<li><a href='messages.php?m=inbox'>Messages</a></li>
+								<li><a href='roommates.php'>Roommates</a></li>
 								<li><a href='user_settings.php'>User Settings</a></li>
 							</ul>
 						</li>

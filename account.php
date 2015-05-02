@@ -75,18 +75,18 @@
 							<strong class=''>Last seen</strong>
 						</span>
 						".date("M d, Y", $userDetails['last_sign_in_stamp'])."
-					</li>
-
-                    <li class='list-group-item text-right'>
-						<span class='pull-left'>
-							<strong class=''>Real name</strong>
-						</span>
-						".$userDetails['display_name']."
 					</li>";
 					
-					if($userDetails['private_profile'] == 0)
+					if($userId == $loggedInUser->user_id || $userDetails['private_profile'] == 0)
 					{
 						echo "
+						<li class='list-group-item text-right'>
+							<span class='pull-left'>
+								<strong class=''>Real name</strong>
+							</span>
+							".$userDetails['display_name']."
+						</li>
+						
 						<li class='list-group-item text-right'>
 							<span class='pull-left'>
 								<strong class=''>Title</strong>
@@ -99,8 +99,12 @@
 								<strong class=''>Gender</strong>
 							</span>
 							".$userDetails['gender']."
-						</li>
+						</li>";
+					}	
 						
+					if($userId == $loggedInUser->user_id)
+					{
+						echo "
 						<li class='list-group-item text-right'>
 							<span class='pull-left'>
 								<strong class=''>Email</strong>
@@ -142,20 +146,38 @@
 					</div>";
 				}
 				
-				$rStats = reviewStats($userDetails['id']);
-				$ratingCount = 0;
-				$ratingAverage = 0;
-				foreach($rStats as $r)
+				$aStats = aptReviewStats($userDetails['id']);
+				$aRatingCount = 0;
+				$aRatingAverage = 0;
+				foreach($aStats as $r)
 				{
-					if(isset($r['rating']))
+					if(isset($r['rating']) && $r['rating'] != 0)
 					{
-						$ratingCount++;
-						$ratingAverage += $r['rating'];
+						$aRatingCount++;
+						$aRatingAverage += $r['rating'];
 					}
 				}
-				if($ratingCount > 0)
+				if($aRatingCount > 0)
 				{
-					$ratingAverage = $ratingAverage / $ratingCount;
+					$aRatingAverage = $aRatingAverage / $aRatingCount;
+				}
+				
+				////////////////////////////////////////////
+				
+				$lStats = llReviewStats($userDetails['id']);
+				$lRatingCount = 0;
+				$lRatingAverage = 0;
+				foreach($lStats as $r)
+				{
+					if(isset($r['rating']) && $r['rating'] != 0)
+					{
+						$lRatingCount++;
+						$lRatingAverage += $r['rating'];
+					}
+				}
+				if($lRatingCount > 0)
+				{
+					$lRatingAverage = $lRatingAverage / $lRatingCount;
 				}
 				
 				echo "
@@ -166,23 +188,44 @@
 
                     <li class='list-group-item text-right'>
 						<span class='pull-left'>
-							<strong class=''>Reviews</strong>
+							<strong class=''>Apartment Reviews</strong>
 						</span>
-						".count($rStats)."
+						".count($aStats)."
 					</li>
 
                     <li class='list-group-item text-right'>
 						<span class='pull-left'>
-							<strong class=''>Ratings Count</strong>
+							<strong class=''>Apartment Ratings</strong>
 						</span>
-						".$ratingCount."
+						".$aRatingCount."
 					</li>
 					
 					<li class='list-group-item text-right'>
 						<span class='pull-left'>
-							<strong class=''>Average Rating</strong>
+							<strong class=''>Apartment Average Rating</strong>
 						</span>
-						".number_format($ratingAverage, 1, '.', '')."
+						".number_format($aRatingAverage, 1, '.', '')."
+					</li>
+					
+					<li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Landlord Reviews</strong>
+						</span>
+						".count($lStats)."
+					</li>
+
+                    <li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Landlord Ratings</strong>
+						</span>
+						".$lRatingCount."
+					</li>
+					
+					<li class='list-group-item text-right'>
+						<span class='pull-left'>
+							<strong class=''>Landlord Average Rating</strong>
+						</span>
+						".number_format($lRatingAverage, 1, '.', '')."
 					</li>";
 					
 					if($userId == $loggedInUser->user_id)
@@ -214,7 +257,7 @@
                     </div>
 
                     <div class='panel-body'>";
-						if($userDetails['private_profile'] == 0)
+						if($userId == $loggedInUser->user_id || $userDetails['private_profile'] == 0)
 						{
 							if(isset($userDetails['description']))
 							{

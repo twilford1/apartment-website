@@ -1925,6 +1925,27 @@
 		return ($row);
 	}
 	
+	//Return the landlord name given the specified ID
+	function fetchLandlordName($id = NULL)
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			name
+			FROM ".$db_table_prefix."landlords
+			WHERE landlord_id = ?
+			LIMIT 1");
+			$stmt->bind_param("i", $id);
+		$stmt->execute();
+		$stmt->bind_result($user);
+		$row = null;
+		while ($stmt->fetch())
+		{
+			$row = $user;
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
 	//Return true if the username is unique, false if it already exists
 	function isUnique($username)
 	{
@@ -2299,13 +2320,37 @@
 	}
 	
 	//Retrieve a user's review count
-	function reviewStats($user_id)
+	function aptReviewStats($user_id)
 	{
 		global $mysqli, $db_table_prefix; 
 		$stmt = $mysqli->prepare("SELECT 
 			apartment_id,
 			rating
 			FROM ".$db_table_prefix."apt_reviews
+			WHERE
+			user_id = ?
+			");
+			$stmt->bind_param("i", $user_id);
+		$stmt->execute();
+		$stmt->bind_result($id, $rating);
+		
+		$row = null;
+		while ($stmt->fetch())
+		{
+			$row[] = array('id' => $id, 'rating' => $rating);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	//Retrieve a user's review count
+	function llReviewStats($user_id)
+	{
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			landlord_id,
+			rating
+			FROM ".$db_table_prefix."ll_reviews
 			WHERE
 			user_id = ?
 			");
@@ -2645,7 +2690,7 @@
 	// -----------------------------------------------------
 	
 	// upload image
-	function uploadImage($name, $image, $apartment_id, $location)
+	function uploadImage($name, $image, $apartment_id, $location, $description)
 	{
 		
 		global $mysqli, $db_table_prefix; 
@@ -2653,16 +2698,18 @@
 			name,
 			image,
 			apartment_id,
-			location
+			location,
+			description
 			)
 			VALUES (
+			?,
 			?,
 			?,
 			?,
 			?
 			)");
 			
-		$stmt->bind_param("sbii", $name, $image, $apartment_id, $location);
+		$stmt->bind_param("sbiis", $name, $image, $apartment_id, $location, $description);
 		$stmt->send_long_data(1, file_get_contents($image));
 		$result = $stmt->execute();
 		$stmt->close();	

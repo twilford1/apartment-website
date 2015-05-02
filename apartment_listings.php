@@ -26,88 +26,7 @@
 	$listings = fetchListings($_POST['searchTerms']);
 	
 	require_once("models/header.php");
-	
-	/*
-	echo "
-	<center>
-	<div style='width:800px;'>
-		<h2>Apartment Listings".$searchTitle."</h2>
-		<br>
-		<div class='table-responsive'>
-			<table class='table table-striped'>
-				<thead>
-					<tr>
-						<th> </th>
-						<th>Name</th>
-						<th>Address</th>
-						<th>Rent</th>
-						<th>Bed/Bath</th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>";
-				
-				if(empty($listings))
-				{
-					echo "
-					<tr>
-						<td>
-						</td>
-						<td>
-							-
-						</td>
-						<td>
-							-
-						</td>
-						<td>
-							-
-						</td>
-						<td>
-							-
-						</td>
-						<td>
-							-
-						</td>
-					</tr>";
-				}
-				else
-				{
-					//Display list of pages
-					foreach ($listings as $apt)
-					{
-						//".$apt['fieldNameFromFunction']."
-						echo "
-						<tr>
-							<td>
-								<img src='/models/site-templates/images/no-image.png' alt='No Image' width='50' height='50'>
-							</td>
-							<td>
-								".$apt['name']."
-							</td>
-							<td>
-								<a href='map.php'>".$apt['address']."</a>
-							</td>
-							<td>
-								$".$apt['price']."
-							</td>
-							<td>
-								".$apt['num_bedrooms']."/".$apt['num_bathrooms']."
-							</td>
-							<td>
-								<a class='btn btn-primary' href='apartment_listing.php?id=".$apt['apartment_id']."'>View</a>
-							</td>
-						</tr>";
-					}
-				}
-				echo "
-				</tbody>
-			</table>
-		</div>
-	</center>";
-	*/
-	
-	
-	
+		
 	echo "
 	<center>
 	<div style='width:900px;'>
@@ -118,12 +37,12 @@
 				<thead>
 					<tr>
 						<th data-column-id='id' data-type='numeric' data-order='asc' data-identifier='true'>ID</th>
-						<th data-column-id='img' data-sortable='false' data-formatter='img'> </th>
+						<th data-column-id='img' data-sortable='false' data-formatter='img'>Pic</th>
 						<th data-column-id='name'>Name</th>
 						<th data-column-id='address' data-formatter='link2'>Address</th>
 						<th data-column-id='rent'>Rent</th>
 						<th data-column-id='bed_bath'>Bed/Bath</th>
-						<th data-column-id='view' data-sortable='false' data-formatter='link'></th>
+						<th data-column-id='view' data-sortable='false' data-formatter='link'>View</th>
 					</tr>
 				</thead>
 				<tbody>";

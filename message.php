@@ -251,7 +251,7 @@
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>From:</label>
 								<div class='col-sm-9'>
-									<input type='text' name='sender' class='form-control' value='".fetchUsername($message['sender_id'])."'>
+									<input type='text' name='sender' class='form-control' value='".fetchUsername($message['sender_id'])."' readonly>
 								</div>
 							</div>
 							<div class='form-group'>
@@ -279,25 +279,25 @@
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>To:</label>
 								<div class='col-sm-9'>
-									<input type='text' name='recipient' class='form-control' value='".fetchUsername($message['recipient_id'])."'>
+									<input type='text' name='recipient' class='form-control' value='".fetchUsername($message['recipient_id'])."' readonly>
 								</div>
 							</div>
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>From:</label>
 								<div class='col-sm-9'>
-									<input type='text' name='sender' class='form-control' value='".fetchUsername($message['sender_id'])."'>
+									<input type='text' name='sender' class='form-control' value='".fetchUsername($message['sender_id'])."' readonly>
 								</div>
 							</div>
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>Subject:</label>
 								<div class='col-sm-9'>
-									<input type='text' name='subject' maxlength='60' class='form-control' value='".$message['subject']."'>
+									<input type='text' name='subject' maxlength='60' class='form-control' value='".$message['subject']."' readonly>
 								</div>
 							</div>
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>Message:</label>
 								<div class='col-sm-9'>
-									<textarea class='form-control' rows='4'>".$message['message']."</textarea>
+									<textarea class='form-control' rows='4' readonly>".$message['message']."</textarea>
 								</div>
 							</div>";
 							
