@@ -37,6 +37,10 @@
 	if(isset($_POST['upload_image_submit']))
 	{
 		$errors = array();
+		$temp = array();
+		$temp = explode("_", $_SESSION['flaw_description']);
+		$loc_id = $temp[0];
+		$des = $temp[1];
 		
 		$file = $_FILES['uploaded_image']['tmp_name'];
 		if(!isset($file))
@@ -53,7 +57,7 @@
 			$errors[] = lang("IMAGE_INVALID_TYPE");
 		else
 		{
-			$new_image = uploadImage($image_name, $image, 1,1,$_SESSION['flaw_description']);
+			$new_image = uploadImage($image_name, $image, $_SESSION['flaw_apt'],$loc_id,$des);
 			if(!empty($new_image))
 				$successes[] = lang("IMAGE_UPLOADED");
 			else
@@ -94,49 +98,49 @@
 							<div class='col-md-4'>
 								<b>Apartment:</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Air-Conditioning</label>
+								  <label><input type='radio' name='flaw_sel' value='1_Air-Conditioning'>Air-Conditioning</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Ample electrical outlets</label>
+								  <label><input type='radio' name='flaw_sel' value='1_Ample electrical outlets'>Ample electrical outlets</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Privacy</label>
+								  <label><input type='radio' name='flaw_sel' value='1_Privacy'>Privacy</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Blinds/curtains</label>
+								  <label><input type='radio' name='flaw_sel' value='1_Blinds/curtains'>Blinds/curtains</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Cable TV connection</label>
+								  <label><input type='radio' name='flaw_sel' value='1_Cable TV connection'>Cable TV connection</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Floors (carpet/hardwood)</label>
+								  <label><input type='radio' name='flaw_sel' value='1_Floors (carpet/hardwood)'>Floors (carpet/hardwood)</label>
 								</div>							
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Fireplace</label>
+								  <label><input type='radio' name='flaw_sel' value='1_Fireplace'>Fireplace</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Lighting/Natural light</label>
+								  <label><input type='radio' name='flaw_sel' value='1_Lighting/Natural light'>Lighting/Natural light</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Paint/wall markings/stains</label>
+								  <label><input type='radio' name='flaw_sel' value='1_Paint/wall markings/stains'>Paint/wall markings/stains</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Patio/balcony</label>
+								  <label><input type='radio' name='flaw_sel' value='1_Patio/balcony'>Patio/balcony</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Phone jack(s)/Ethernet jack(s)</label>
+								  <label><input type='radio' name='flaw_sel' value='1_Phone jack(s)/Ethernet jack(s)'>Phone jack(s)/Ethernet jack(s)</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>View</label>
+								  <label><input type='radio' name='flaw_sel' value='1_View'>View</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Water pressure</label>
+								  <label><input type='radio' name='flaw_sel' value='1_Water pressure'>Water pressure</label>
 								</div>
 							</div>
 							<div class='col-md-4'>
 								<b>Lease:</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Pets allowed</label>
+								  <label><input type='radio' name='flaw_sel' value=''>Pets allowed</label>
 								</div>
 								<div class='radio'>
 								  <label><input type='radio' name='flaw_sel' value=''>Physical changes allowed</label>
@@ -176,7 +180,7 @@
 							<div class='col-md-4'>
 								<b>Community:</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Laundry/Facilities nearby</label>
+								  <label><input type='radio' name='flaw_sel' value=''>Laundry/Facilities nearby</label>
 								</div>
 								<div class='radio'>
 								  <label><input type='radio' name='flaw_sel' value=''>Garbage chute/trash removal nearby</label>
@@ -241,60 +245,60 @@
 							<div class='col-md-4'>
 								<b>Shower:</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Broken/leaky shower head</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Broken/leaky shower head'>Broken/leaky shower head</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Stains</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Stains'>Stains</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Damaged shower curtains or shower rod</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Damaged shower curtains or shower rod'>Damaged shower curtains or shower rod</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Broken or chipped tiles</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Broken or chipped tiles'>Broken or chipped tiles</label>
 								</div>
 								<b>Bathtub:</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Broken/leaky faucet or knobs</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Broken/leaky faucet or knobs'>Broken/leaky faucet or knobs</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Stains</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Stains'>Stains</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Damaged caulk</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Damaged caulk'>Damaged caulk</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Mold (could be at outer base of tub or around inside edges)</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Mold (could be at outer base of tub or around inside edges)'>Mold (could be at outer base of tub or around inside edges)</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Broken or chipped porcelain or other tub material</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Broken or chipped porcelain or other tub material'>Broken or chipped porcelain or other tub material</label>
 								</div>
 							</div>
 							<div class='col-md-4'>
 								<b>Toilet:</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Difficult/damaged flushing mechanism</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Difficult/damaged flushing mechanism'>Difficult/damaged flushing mechanism</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Stains in toilet bowl or on seat</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Stains in toilet bowl or on seat'>Stains in toilet bowl or on seat</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Mold around base or inner rim</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Mold around base or inner rim'>Mold around base or inner rim</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Broken lid, toilet seat, etc.</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Broken lid, toilet seat, etc.'>Broken lid, toilet seat, etc.</label>
 								</div>
 								<b>Sink:</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Faucet works (both hot and cold)</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Faucet works (both hot and cold)'>Faucet works (both hot and cold)</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Stains/chips/rust/other damage</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Stains/chips/rust/other damage'>Stains/chips/rust/other damage</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Mould around drain/faucet/outside of basin</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Mould around drain/faucet/outside of basin'>Mould around drain/faucet/outside of basin</label>
 								</div>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value=''>Caulking in tact</label>
+								  <label><input type='radio' name='flaw_sel' value='2_Caulking in tact'>Caulking in tact</label>
 								</div>
 							</div>
 							<div class='col-md-4'>
@@ -337,7 +341,7 @@
 							<div class='col-md-4'>
 								<b>Refrigerator:</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Old/outdated</label>
+								  <label><input type='radio' name='flaw_sel' value='3_Old/outdated'>Old/outdated</label>
 								</div>
 								<div class='radio'>
 								  <label><input type='radio' name='flaw_sel' value=''>Working freezer</label>
@@ -445,7 +449,7 @@
 							<div class='col-md-4'>
 								<b>Closet</b>
 								<div class='radio'>
-								  <label><input type='radio' name='flaw_sel' value='TESTTESTTESTTESETEST'>Lighting</label>
+								  <label><input type='radio' name='flaw_sel' value='4_Lighting'>Lighting</label>
 								</div>
 								<div class='radio'>
 								  <label><input type='radio' name='flaw_sel' value=''>Walk-in</label>
@@ -495,8 +499,11 @@
 			<center> <button type='submit' class='btn btn-primary' name='choose_flaw_submit' id='choose_flaw_submit'>Select</button> </center>
 			<br>
 			</form>
-		</div>
-
+		</div>";
+	echo "<center>";
+	echo resultBlock($errors,$successes);
+	echo "</center>";
+	echo "
 	<div class='container'>
 <center>
 		<div style='width:400px;'>
@@ -524,7 +531,7 @@
 		</div>
 </center>
 	</div>";
-	echo resultBlock($errors,$successes);
+	
 	//getLastImage();
 
 	include 'models/footer.php';

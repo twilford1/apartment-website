@@ -283,6 +283,7 @@
 					<textarea name='description' class='form-control' rows='3'>".$loggedInUser->description."</textarea>
 				</div>
 			</div>
+				
 			<br>
 			<div class='form-group'>
 				<div class='col-sm-offset-5 col-sm-7'>
@@ -294,7 +295,7 @@
 	</div>";
 	
 	echo "</center>";
-
+	
 ?>
 
 <script>

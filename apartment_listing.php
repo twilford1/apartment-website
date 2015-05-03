@@ -8,6 +8,8 @@
 	
 	$aptId = $_GET['id'];
 	
+	$_SESSION['flaw_apt'] = $aptId;  // George
+	
 	$aptDetails = fetchListingDetails($aptId);
 	$reviews = getAptReviews($aptId);
 	$revCount = 0;

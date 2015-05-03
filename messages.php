@@ -125,6 +125,9 @@
 	echo "</center>";
 			
 	echo "
+	
+	<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js'></script>
+			
 	<div class='page-header'>
 		<div class='row'>
 			<div class='col-md-2'>
@@ -187,7 +190,7 @@
 								
 								echo "
 								<td data-column-id='subject'>Subject</td>
-								<td data-column-id='view' data-formatter='link'> </td>
+								<td data-column-id='view' data-formatter='link'>View</td>
 							</tr>
 						</thead>
 						<tbody>";
@@ -274,12 +277,36 @@
 						
 						<form name='composeNew' action='".$_SERVER['PHP_SELF']."?m=".$_GET['m']."' method='post' class='form-horizontal'>
 							<div class='modal-body'>
+								
 								<div class='form-group'>
-									<label class='col-sm-2'>To</label>
+									<div class='col-sm-2'>
+										<div class='dropdown dropdown-scroll' ng-app='app'>
+											<button class='btn btn-primary dropdown-toggle' data-toggle='dropdown' id='dropdownMenu1' type='button'>
+													To
+											</button>
+											
+											<ul class='dropdown-menu' role='menu' aria-labelledby='dropdownMenu1' ng-controller='ListCtrl'>
+												<li role='presentation'>
+													<div class='input-group input-group-sm search-control'>
+														<span class='input-group-addon'>
+															<span class='glyphicon glyphicon-user'></span>
+														</span>
+														<input type='text' class='form-control' placeholder='Username' ng-model='query'></input>
+													</div>
+												</li>
+												<li role='presentation' ng-repeat='item in items | filter:query'>
+													<a href='#' id='usernameLink' onclick='insertUsername(this.innerHTML)'>{{item.name}}</a>
+												</li>
+												
+											</ul>
+										</div>			
+									</div>	
 									<div class='col-sm-10'>
-										<input type='text' name='recipient' class='form-control' placeholder='recipient'>
+										<input type='text' class='form-control' id='recipientField' name='recipient' placeholder='recipient' value=''>
 									</div>
 								</div>
+								
+								
 								<div class='form-group'>
 									<label class='col-sm-2'>Subject</label>
 									<div class='col-sm-10'>
@@ -319,6 +346,24 @@
 				return "<a href='message.php?id=" + messages[row.id - 1]['id'] + "' class='btn btn-xs btn-primary'>View</a>";
 			}
 		}
+	});
+	
+	function insertUsername(user) {
+		//alert( user );
+		$("#recipientField").val(user);
+	}
+	
+	// Angular
+	var searchUserApp = angular.module('app', []);
+	searchUserApp.controller('ListCtrl', function ($scope) {
+		<?php
+			$php_array = jsFetchAllUsernames();
+			echo "$"."scope.items = ".json_encode($php_array).";\n";
+		?>
+	});
+	// jQuery
+	$('.dropdown-menu').find('input').click(function (e) {
+		e.stopPropagation();
 	});
 </script>
 

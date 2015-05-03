@@ -71,7 +71,7 @@
 				header("Refresh: 2;url=messages.php?m=inbox");
 			}
 			
-						
+			// Logic used for replying --			
 			// If the message was sent to you then that means you are
 			// replying, so the new recipient is the old sender
 			if($loggedInUser->user_id == $message['recipient_id'])
@@ -137,13 +137,13 @@
 					$errors = [0 => "Invalid Recipient"];
 				}
 			}
-			else if(isset($_POST['draftButton']))
+			elseif(isset($_POST['draftButton']))
 			{
 				// If the current message is already a draft, just update
 				// otherwise create a new message for the draft
 				if($message['draft'] == 1)
 				{
-					if(updateMessage($message['id'], $recipientID, $_POST['subject'], $_POST['message'], 1))
+					if(updateMessage($message['id'], fetchUserID($_POST['recipient']), $_POST['subject'], $_POST['message'], 1))
 					{
 						$successes = [0 => "Draft Saved"];
 						$message = fetchMessageDetails($messageId);
@@ -155,7 +155,7 @@
 				}
 				else
 				{
-					if(newMessage($loggedInUser->user_id, $recipientID, $_POST['subject'], $_POST['message'], 1))
+					if(newMessage($loggedInUser->user_id, fetchUserID($_POST['recipient']), $_POST['subject'], $_POST['message'], 1))
 					{
 						$successes = [0 => "Draft Saved"];
 						$message = fetchMessageDetails($messageId);
@@ -167,7 +167,7 @@
 					}
 				}
 			}
-			else if(isset($_POST['discardButton']))
+			elseif(isset($_POST['discardButton']))
 			{
 				if(deleteMessage($_GET['id']))
 				{
@@ -207,9 +207,19 @@
 	echo "</center>";
 	
 	echo "
+	<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js'></script>
+			
 	<div class='page-header'>
-		<h1>
-			<a href ='messages.php?m=inbox' class='btn btn-default'>
+		<h1>";
+			if($message['draft'] == 1)
+			{
+				echo "<a href ='messages.php?m=drafts' class='btn btn-default'>";
+			}
+			else
+			{
+				echo "<a href ='messages.php?m=inbox' class='btn btn-default'>";
+			}
+			echo "
 				<span class='glyphicon glyphicon-circle-arrow-left'></span>
 			</a>
 			Message Details
@@ -243,11 +253,33 @@
 						{
 							echo "
 							<div class='form-group'>
-								<label for='to' class='col-sm-2 control-label'>To:</label>
+								<div class='col-sm-2'>
+									<div class='dropdown dropdown-scroll' ng-app='app' style='float:right;'>
+										<button class='btn btn-primary dropdown-toggle' data-toggle='dropdown' id='dropdownMenu1' type='button'>
+												To:
+										</button>
+										
+										<ul class='dropdown-menu' role='menu' aria-labelledby='dropdownMenu1' ng-controller='ListCtrl'>
+											<li role='presentation'>
+												<div class='input-group input-group-sm search-control'>
+													<span class='input-group-addon'>
+														<span class='glyphicon glyphicon-user'></span>
+													</span>
+													<input type='text' class='form-control' placeholder='Username' ng-model='query'></input>
+												</div>
+											</li>
+											<li role='presentation' ng-repeat='item in items | filter:query'>
+												<a href='#' id='usernameLink' onclick='insertUsername(this.innerHTML)'>{{item.name}}</a>
+											</li>
+											
+										</ul>
+									</div>			
+								</div>	
 								<div class='col-sm-9'>
-									<input type='text' name='recipient' class='form-control' value='".fetchUsername($message['recipient_id'])."'>
+									<input type='text' class='form-control' name='recipient' id='recipientField' placeholder='recipient' value='".fetchUsername($message['recipient_id'])."'>
 								</div>
 							</div>
+							
 							<div class='form-group'>
 								<label for='to' class='col-sm-2 control-label'>From:</label>
 								<div class='col-sm-9'>
@@ -319,10 +351,15 @@
 								{									
 									echo"
 										<br>
-										<button type='submit' name='toggleRead' class='".$toggleReadLabel."'>
+										<!--
+										<button type='submit' name='discardButton' class='btn btn-danger' title='Delete Message'>
+											<span class='glyphicon glyphicon-trash'></span>
+										</button>
+										-->
+										<button type='submit' name='toggleRead' class='".$toggleReadLabel."' title='Toggle Read Status'>
 											<span class='glyphicon glyphicon-envelope'></span>
 										</button>
-										<a class='btn btn-primary' data-toggle='collapse' href='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>
+										<a class='btn btn-primary' data-toggle='collapse' href='#collapseExample' aria-expanded='false' aria-controls='collapseExample' title='reply'>
 											<span class='glyphicon glyphicon-pencil'></span>
 										</a>
 									</center>
@@ -359,10 +396,28 @@
 
 <script>
 	function confirmDelete(form) {
-		if (confirm("Are you sure you want to delete this draft?")) {
+		if (confirm("Are you sure you want to delete this?")) {
 			form.submit();
 		}
 	}
+	
+	function insertUsername(user) {
+		//alert( user );
+		$("#recipientField").val(user);
+	}
+	
+	// Angular
+	var searchUserApp = angular.module('app', []);
+	searchUserApp.controller('ListCtrl', function ($scope) {
+		<?php
+			$php_array = jsFetchAllUsernames();
+			echo "$"."scope.items = ".json_encode($php_array).";\n";
+		?>
+	});
+	// jQuery
+	$('.dropdown-menu').find('input').click(function (e) {
+		e.stopPropagation();
+	});
 </script>
 
 <?php	

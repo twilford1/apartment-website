@@ -308,6 +308,44 @@
 		return ($row);
 	}
 
+	//Retrieve usernames for all users non-private
+	function fetchAllUsernames()
+	{
+		global $mysqli,$db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			user_name
+			FROM ".$db_table_prefix."users
+			WHERE private_profile = 0");
+		$stmt->execute();
+		$stmt->bind_result($user);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = $user;
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
+	//Retrieve usernames for all users non-private
+	function jsFetchAllUsernames()
+	{
+		global $mysqli,$db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			user_name
+			FROM ".$db_table_prefix."users
+			WHERE private_profile = 0");
+		$stmt->execute();
+		$stmt->bind_result($user);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('name' => $user);
+		}
+		$stmt->close();
+		return ($row);
+	}
+	
 	//Retrieve complete user information by username, token or ID
 	function fetchUserDetails($username=NULL, $token=NULL, $id=NULL)
 	{
@@ -2046,7 +2084,10 @@
 			}
 			else
 			{
-				$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'wasRead' => $wasRead, 'draft' => $draft);
+				if($draft != 1)
+				{
+					$row[] = array('id' => $id, 'sender_id' => $sender_id, 'recipient_id' => $recipient_id, 'subject' => $subject, 'message' => $message, 'timestamp' => $timestamp, 'wasRead' => $wasRead, 'draft' => $draft);
+				}
 			}
 		}
 		$stmt->close();

@@ -9,7 +9,7 @@
 	
 	
 	//$landlords = fetchLandlords($_SESSION['searchTerms']);
-	$aptId = $_GET['apartment_id'];
+	$aptId = $_SESSION['flaw_apt'];
 	$flaw = getImageAptID($aptId);
 	//echo $aptId;
 	
