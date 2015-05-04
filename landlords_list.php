@@ -43,7 +43,7 @@
 								".$ll['name']."
 							</td>
 							<td>
-								<a href=''>".$ll['address']."</a>
+								<a href='".$ll['address']."'>".$ll['address']."</a>
 							</td>
 							<td>
 								".$ll['email']."

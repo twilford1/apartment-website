@@ -29,8 +29,16 @@
 						<li class='dropdown'>
 							<a href='#' class='dropdown-toggle' data-toggle='dropdown'>My Account<span class='caret'></span></a>
 							<ul class='dropdown-menu' role='menu'>
-								<li><a href='account.php'>Account Home</a></li>
-								<li><a href='messages.php?m=inbox'>Messages</a></li>
+								<li><a href='account.php'>Account Home</a></li>";
+								if(unreadCount($loggedInUser->user_id) > 0)
+								{
+									echo "<li><a href='messages.php?m=inbox'><font color='blue'>Messages (".unreadCount($loggedInUser->user_id).")</font></a></li>";
+								}
+								else
+								{
+									echo "<li><a href='messages.php?m=inbox'>Messages</a></li>";
+								}
+								echo "
 								<li><a href='roommates.php'>Manage Roommates</a></li>
 								<li><a href='costs.php'>Roommate Transactions</a></li>
 								<li><a href='user_settings.php'>User Settings</a></li>

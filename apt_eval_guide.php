@@ -13,13 +13,7 @@
 		//if($_POST['choose_flaw_submit'])
 		//header('Location: image_upload.php');
 	}*/
-	/****************************
-	TODO
-	
-	
-	
-	
-	*****************************/
+
 	//$flaw_description = 'test';
 	
 	//Forms posted
@@ -509,7 +503,7 @@
 			<form class='form-horizontal' name='newImage' action='' method='post' enctype='multipart/form-data'>
 			<div class='form-group'>
 				<div class='col-sm-9'>
-					<h2>Upload A Image</h2>
+					<h2>Upload An Image</h2>
 				</div>
 			</div>
 			<div class='form-group'>

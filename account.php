@@ -278,7 +278,7 @@
 
                 <div class='panel panel-default target'>
                     <div class='panel-heading' contenteditable='false'>
-                        Panel Title
+                        Looking for an apartment?
                     </div>
 
                     <div class='panel-body'>
@@ -289,9 +289,10 @@
                                     'http://lorempixel.com/600/200/people'>
 
                                     <div class='caption'>
-                                        <h3>Stuff</h3>
+                                        <h3>Apartments</h3>
 
-                                        <p>Cocker Spaniel who loves treats.</p>
+                                        <p>Check out one-bedrooms still open
+										or find a roommate to share an apartment</p>
 
                                         <p></p>
                                     </div>
@@ -304,9 +305,10 @@
                                     'http://lorempixel.com/600/200/city'>
 
                                     <div class='caption'>
-                                        <h3>Stuffs</h3>
+                                        <h3>Studio Flats</h3>
 
-                                        <p>Is just another friendly dog.</p>
+                                        <p>Find an apartment with a combining living room,
+										bedroom, and kitchen</p>
 
                                         <p></p>
                                     </div>
@@ -319,10 +321,9 @@
                                     'http://lorempixel.com/600/200/sports'>
 
                                     <div class='caption'>
-                                        <h3>Stuffss</h3>
+                                        <h3>Condominiums</h3>
 
-                                        <p>Loves catnip and naps. Not fond of
-                                        children.</p>
+                                        <p>Well maintained housing that you buy to own</p>
 
                                         <p></p>
                                     </div>
@@ -334,11 +335,11 @@
 
                 <div class='panel panel-default'>
                     <div class='panel-heading'>
-                        More Stuff
+                        Reviews
                     </div>
 
                     <div class='panel-body'>
-                        Stuff about stuff and stuff
+                        Check out the reviews section for apartments you're interested in
                     </div>
                 </div>
             </div>

@@ -42,31 +42,28 @@
 		
 		<div class='jumbotron' style='background-color: #fff;'>
 			<center>
-				<h1>IC Apartments Test</h1>
-
-				<p class='lead'>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet.</p>
-
+				<h1>Hawk Nest</h1>
+				<p class='lead'>Where birds of a feather flock together</p>
+								
 				<p><a class='btn btn-lg btn-success' href='apartment_listings.php'>View All Listings</a></p>
+				
 			</center>
 		</div><!-- Example row of columns -->
 
 		<div class='row'>
 			<div class='col-lg-4'>
-				<h2>Heading</h2>
+				<h2>Latest Update!</h2>
 
-				<p>As of v8.0, Safari exhibits a bug in which resizing your browser horizontally causes rendering errors in the justified nav that are cleared upon refreshing.</p>
-
-				<p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.</p>
-
-				<p><a class='btn btn-primary' href='#'>View details</a></p>
+				<p>We've updated some of the features on our site. Feel free to check them out.</p>
+				
+				<p><a class='btn btn-primary' href='account.php'>View details</a></p>
 			</div>
 
 			<div class='col-lg-4'>
-				<h2>Heading</h2>
+				<h2>New Logo!</h2>
 
-				<p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.</p>
-
-				<p><a class='btn btn-primary' href='#'>View details</a></p>
+				<img src='/models/site-templates/images/nearOldCapitol.png' height='200' width='250' data-holder-rendered='true'>
+				
 			</div>
 
 			<div class='col-lg-4'>
