@@ -56,7 +56,7 @@
 							<a href='#' class='dropdown-toggle' data-toggle='dropdown'>Guides<span class='caret'></span></a>
 							<ul class='dropdown-menu' role='menu'>
 								<li><a href='utility_guide.php'>Iowa City Utility Guide</a></li>
-								<li><a href='apt_eval_guide.php'>Apartment Evaluation Guide</a></li>
+								<li><a href='apt_walkthrough_guide.php'>Apartment Walkthrough Guide</a></li>
 							</ul>
 						</li>";
 						
@@ -96,7 +96,7 @@
 							<a href='#' class='dropdown-toggle' data-toggle='dropdown'>Guides<span class='caret'></span></a>
 							<ul class='dropdown-menu' role='menu'>
 								<li><a href='utility_guide.php'>Iowa City Utility Guide</a></li>
-								<li><a href='apt_eval_guide.php'>Apartment Evaluation Guide</a></li>
+								<li><a href='apt_walkthrough_guide.php'>Apartment Evaluation Guide</a></li>
 							</ul>
 						</li>";
 						

@@ -15,7 +15,10 @@
 	}*/
 
 	//$flaw_description = 'test';
-	
+	$aptInfo = array();
+	$aptInfo = fetchListingDetails($_SESSION['flaw_apt']);
+		
+	$aptName = $aptInfo['name'];
 	//Forms posted
 	if(isset($_POST['choose_flaw_submit']) && !isset($_POST['upload_image_submit'])) 
 	{
@@ -34,6 +37,7 @@
 		$temp = explode("_", $_SESSION['flaw_description']);
 		$loc_id = $temp[0];
 		$des = $temp[1];
+
 		
 		$file = $_FILES['uploaded_image']['tmp_name'];
 		if(!isset($file))
@@ -66,7 +70,7 @@
 	
 	echo "
 	<center>
-		<h2>Apartment Evaluation Guide</h2>
+		<h2> ".$aptName."</h2>
 	</center>
 	<br>
 

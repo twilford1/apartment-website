@@ -25,6 +25,16 @@
 	
 	$listings = fetchListings($_POST['searchTerms']);
 	
+	//NEEDED FOR VIEWING LANDLORDS LISTINGS
+	if(isset($_GET))
+	{
+		if(isset($_GET['landlord_id']))
+		{
+			$terms['landlord_id'] = $_GET['landlord_id'];
+			$listings = fetchListingsWithTerms($terms);
+		}
+	}
+	
 	require_once("models/header.php");
 		
 	echo "
@@ -49,7 +59,7 @@
 				
 				if(!empty($listings))
 				{
-					$i = 1;
+					//$i = 1;
 					//Display list of pages
 					foreach ($listings as $apt)
 					{
@@ -57,7 +67,7 @@
 						echo "
 						<tr>
 							<td>
-								".$i++."
+								".$apt['apartment_id']."
 							</td>
 							<td>
 								<img src='/models/site-templates/images/no-image.png' alt='No Image' width='50' height='50'>

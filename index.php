@@ -52,7 +52,7 @@
 
 		<div class='row'>
 			<div class='col-lg-4'>
-				<h2>Latest Update!</h2>
+				<h2>Update 5/03: New features</h2>
 
 				<p>We've updated some of the features on our site. Feel free to check them out.</p>
 				
@@ -60,16 +60,16 @@
 			</div>
 
 			<div class='col-lg-4'>
-				<h2>New Logo!</h2>
+				<h2>Update 4/16: New logo!</h2>
 
 				<img src='/models/site-templates/images/nearOldCapitol.png' height='200' width='250' data-holder-rendered='true'>
 				
 			</div>
 
 			<div class='col-lg-4'>
-				<h2>Heading</h2>
+				<h2>Join Us</h2>
 
-				<p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa.</p>
+				<p>Join our online apartment community! Read our reviews, message other users, and even find a roommate!</p>
 
 				<p><a class='btn btn-primary' href='#'>View details</a></p>
 			</div>
