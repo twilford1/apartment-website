@@ -1234,6 +1234,8 @@
 	//*************NEEDED FOR MAP.PHP!!!****************
 	function fetchListingsWithTerms($terms = NULL)
 	{
+		global $mysqli, $db_table_prefix; 
+		
 		if($terms != NULL)
 		{
 			// TODO custom search results
@@ -1241,7 +1243,6 @@
 			// Return all listings with limit
 			if(isset($terms['limit']))
 			{
-				global $mysqli, $db_table_prefix; 
 				$stmt = $mysqli->prepare("SELECT 
 					apartment_id,
 					name,
@@ -1268,11 +1269,41 @@
 				$stmt->close();
 				return ($row);
 			}
+			//return all listings for landlord
+			else if(isset($terms['landlord_id']))
+			{
+				$stmt = $mysqli->prepare("SELECT 
+					apartment_id,
+					name,
+					address,
+					latitude,
+					longitude,
+					num_bedrooms,
+					num_bathrooms,
+					landlord_id,
+					price,
+					deposit,
+					description,
+					status,
+					last_updated
+					FROM ".$db_table_prefix."apartments
+					WHERE landlord_id = ?
+					");
+				$stmt->bind_param("i", $terms['landlord_id']);
+				$stmt->execute();
+				$stmt->bind_result($apartment_id, $name, $address, $latitude, $longitude, $num_bedrooms, $num_bathrooms, $landlord_id, $price, $deposit, $description, $status, $last_updated);
+				
+				while ($stmt->fetch())
+				{
+					$row[] = array('apartment_id' => $apartment_id, 'name' => $name, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'num_bedrooms' => $num_bedrooms, 'num_bathrooms' => $num_bathrooms, 'landlord_id' => $landlord_id, 'price' => $price, 'deposit' => $deposit, 'description' => $description, 'status' => $status, 'last_updated' => $last_updated);
+				}
+				$stmt->close();
+				return ($row);
+			}
 		}
 		else
 		{
 			// Return all listings
-			global $mysqli, $db_table_prefix; 
 			$stmt = $mysqli->prepare("SELECT 
 				apartment_id,
 				name,
@@ -2858,6 +2889,30 @@
 		$stmt->close();
 		return $result;
 
+	}
+	
+	//fetch all images with given apt ID
+	function fetchImages($id) {
+		// Return all landlord reviews
+		global $mysqli, $db_table_prefix; 
+		$stmt = $mysqli->prepare("SELECT 
+			name,
+			image,
+			apartment_id,
+			location,
+			description
+			FROM ".$db_table_prefix."images
+			WHERE apartment_id = ?");
+		$stmt->bind_param("i", $id);
+		$stmt->execute();
+		$stmt->bind_result($name, $image, $apartment_id, $location, $description);
+		
+		while ($stmt->fetch())
+		{
+			$row[] = array('name' => $name, 'image' => $image, 'apartment_id' => $apartment_id, 'location' => $location, 'description' => $description);
+		}
+		$stmt->close();
+		return ($row);
 	}
 	//--------------------------------------------------------------
 	// Functions for Apt Reviews 

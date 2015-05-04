@@ -376,7 +376,45 @@ echo "
 										    </div>
 											<div id=\"panel-element-1".$apartment['apartment_id']."\" class=\"panel-collapse collapse\">
 												<div class=\"panel-body\">
-													<div id=\"apartment_".$apartment['apartment_id']."\"><a href='/apartment_listing.php?id=".$apartment['apartment_id']."' target='_blank'>".$apartment['address']."</a>
+													<div id=\"apartment_".$apartment['apartment_id']."\"><a class='btn btn-primary' href='/apartment_listing.php?id=".$apartment['apartment_id']."' target='_blank'><b>View Listing Page</b></a>
+													<table class='table table-user-information'>
+														<tbody>
+															<tr>
+																<td>Landlord:</td>
+																<td>".fetchLandlordName($apartment['landlord_id'])."</td>
+															</tr>
+															<tr>
+																<td>Address:</td>
+																<td>".$apartment['address']."</td>
+															</tr>
+															<tr>
+																<td>Rent:</td>
+																<td>$".$apartment['price']."</td>
+															</tr>
+															<tr>
+																<td>Status:</td>
+																<td>".$apartment['status']."</td>
+															</tr>
+															<tr>
+																<td>Bed/Bath</td>
+																<td>".$apartment['num_bedrooms']."/".$apartment['num_bathrooms']."</td>
+															</tr>
+															<tr>
+																<td>Description</td>
+																<td>".$apartment['description']."</td>
+															</tr>
+															<tr>
+																<td>Contact</td>
+																<td><a href='mailto:info@support.com'>info@support.com</a></td>
+															</tr>
+															<tr>
+																<td>Phone Number</td>
+																<td>
+																	123-4567-890(Landline)<br><br>555-4567-890(Mobile)
+																</td>
+															</tr>
+														</tbody>
+													</table>
 													</div>
 												</div>
 											</div>

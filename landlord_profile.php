@@ -120,8 +120,8 @@
 											</tr>							</tbody>
 									</table>
 									<center>
-										<a href='#' class='btn btn-primary'>View Landlord's Listings</a>
-										<a href='#' class='btn btn-primary'>View Listings on Map</a>
+										<a href='apartment_listings.php?landlord_id=".$llId."' class='btn btn-primary'>View Landlord's Listings</a>
+										<!--<a href='#' class='btn btn-primary'>View Listings on Map</a>-->
 									</center>
 								</div>
 							</div>

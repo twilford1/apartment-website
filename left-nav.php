@@ -27,19 +27,30 @@
 					{
 						echo "
 						<li class='dropdown'>
-							<a href='#' class='dropdown-toggle' data-toggle='dropdown'>Account<span class='caret'></span></a>
+							<a href='#' class='dropdown-toggle' data-toggle='dropdown'>My Account<span class='caret'></span></a>
 							<ul class='dropdown-menu' role='menu'>
 								<li><a href='account.php'>Account Home</a></li>
 								<li><a href='messages.php?m=inbox'>Messages</a></li>
-								<li><a href='roommates.php'>Roommates</a></li>
+								<li><a href='roommates.php'>Manage Roommates</a></li>
+								<li><a href='costs.php'>Roommate Transactions</a></li>
 								<li><a href='user_settings.php'>User Settings</a></li>
 							</ul>
 						</li>
-						<li><a href='apartment_listings.php'>Listings</a></li>
+						<li class='dropdown'>
+							<a href='#' class='dropdown-toggle' data-toggle='dropdown'>Listings<span class='caret'></span></a>
+							<ul class='dropdown-menu' role='menu'>
+								<li><a href='apartment_listings.php'>View Listings</a></li>
+								<li><a href='map.php'>Map</a></li>
+							</ul>
+						</li>
 						<li><a href='landlords_list.php'>Landlords</a></li>
-						<li><a href='map.php'>Map</a></li>
-						<li><a href='guides.php'>Guides</a></li>
-						<li><a href='costs.php'>Roommates</a></li>";
+						<li class='dropdown'>
+							<a href='#' class='dropdown-toggle' data-toggle='dropdown'>Guides<span class='caret'></span></a>
+							<ul class='dropdown-menu' role='menu'>
+								<li><a href='utility_guide.php'>Iowa City Utility Guide</a></li>
+								<li><a href='apt_eval_guide.php'>Apartment Evaluation Guide</a></li>
+							</ul>
+						</li>";
 						
 						//Links for permission level 2 (default admin)
 						if ($loggedInUser->checkPermission(array(2)))
@@ -65,15 +76,28 @@
 						echo "
 						<li><a href='login.php'>Login</a></li>
 						<li><a href='register.php'>Register</a></li>
-						<li><a href='apartment_listings.php'>Listings</a></li>
+						<li class='dropdown'>
+							<a href='#' class='dropdown-toggle' data-toggle='dropdown'>Listings<span class='caret'></span></a>
+							<ul class='dropdown-menu' role='menu'>
+								<li><a href='apartment_listings.php'>View Listings</a></li>
+								<li><a href='map.php'>Map</a></li>
+							</ul>
+						</li>
 						<li><a href='landlords_list.php'>Landlords</a></li>
-						<li><a href='map.php'>Map</a></li>
-						<li><a href='guides.php'>Guides</a></li>";
+						<li class='dropdown'>
+							<a href='#' class='dropdown-toggle' data-toggle='dropdown'>Guides<span class='caret'></span></a>
+							<ul class='dropdown-menu' role='menu'>
+								<li><a href='utility_guide.php'>Iowa City Utility Guide</a></li>
+								<li><a href='apt_eval_guide.php'>Apartment Evaluation Guide</a></li>
+							</ul>
+						</li>";
 						
+						//Couldn't find source of $emailActivation, so commented code out
+						/*
 						if ($emailActivation)
 						{
 							echo "<li><a href='resend-activation.php'>Resend Activation Email</a></li>";
-						}
+						}*/
 					}
 				?>
 			</ul>
@@ -81,7 +105,7 @@
 			<ul class="nav navbar-nav pull-right" id="main-navigation">
 				<form class="navbar-form" role="search" action="apartment_listings.php" method="post">
 					<div class="input-group">
-						<input type="text" name="searchTerms" class="form-control" placeholder="Search">
+						<input type="text" name="searchTerms" class="form-control" placeholder="Search Listings">
 						<div class="input-group-btn">
 							<button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
 						</div>

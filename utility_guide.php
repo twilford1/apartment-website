@@ -73,6 +73,7 @@
 			
 		</ul>
 		
+		
 			
 		</div>
 	
@@ -86,7 +87,14 @@
 		
 	</div>";
 	
-	//echo "</center>";
+	echo "
+	<br>
+	<center>
+		<a class='btn btn-primary' href='apartment_listing.php?id=".$_SESSION['flaw_apt']."'>Back to Listing</a>
+
+	</center>
+	<br>
+	<br>";
 
 	//echo fetchImageID('kuhl.jpg');
 

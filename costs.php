@@ -50,9 +50,7 @@ if(!empty($_POST))
 	
 	//add a new cost if appropriate
 	if($amount && $payer_id && $payee_id && $description)
-	{
-		//****VALIDATE DATE*****//
-		
+	{	
 		//if the payer and payee are not the same person
 		if(userIdExists($payer_id) && $payee_id != $payer_id)
 		{
@@ -72,6 +70,13 @@ if(!empty($_POST))
 				  </div>';
 		}
 	}
+	else
+	{
+		echo '<div class="alert alert-warning"> 
+					<a href="#" class="close" data-dismiss="alert">&times;</a>
+						<strong>Error!</strong> A description, username, and amount are required!
+				  </div>';
+	}
 	
 	
 	/*if(isset($delete))
@@ -82,6 +87,15 @@ if(!empty($_POST))
 
 //get the logged in user's roommates
 $roommates = fetchRoommates($loggedInUser->user_id);
+
+if(!isset($roommates))
+{
+	echo '<div class="alert alert-warning"> 
+			<a href="#" class="close" data-dismiss="alert">&times;</a>
+				<strong>Warning!</strong> You cannot add costs because you have no roommates!
+		  </div>';
+}
+
 //get the costs owed to the logged in user
 $payee_cost = fetchOwedCosts($loggedInUser->user_id);
 //get the costs owed by the logged in user
@@ -129,8 +143,43 @@ for($i=0; $i<count($roommates); $i++)
 	}
 }
 
+//get today's date
+$today=getdate(date("U"));
+
 //make the html for the page
 echo '
+<script>
+	$(document).ready(function() 
+	{	
+		$(function() {
+		   $( "#datepicker" ).datepicker();
+		   $( "#datepicker" ).datepicker("option", "minDate", (new Date()));
+		   $( "#datepicker" ).mask("99/99/9999");
+		 });
+		 
+		 $("#datepicker").blur(function(){
+			var duedate = $("#datepicker").val();
+			duedate = new Date(duedate);
+			var today = new Date();
+			
+			if(duedate < today)
+			{
+				$("#datepicker").val("");
+			}
+		});
+		
+		$("#amount").on("keyup", function(){
+			var valid = /^\d{0,4}(\.\d{0,2})?$/.test(this.value),
+				val = this.value;
+			
+			if(!valid){
+				console.log("Invalid input!");
+				this.value = val.substring(0, val.length - 1);
+			}
+		});
+	});
+</script>
+<div><h1>Roommate Transactions<br><small>Click the tabs below to see your roommate transactions past and present.</small></h1></div><br>
 <div class="container" width="100%">
 		<div class="row clearfix">
 			<div class="col-md-12 column">
@@ -190,20 +239,27 @@ echo '
 																																					 <button type=\'submit\' class=\'btn btn-primary\' value ='.$cost[cost_id].' name="update[cost_id]">Update</button>' : 'no') .
 																 '</td><td></td></tr>';
 														}
-													
-													$today=getdate(date("U"));
-											
+											if(isset($roommates))
+											{
 													   echo'</form>
 															<form name=\'addCost\' class=\'form-horizontal\' action="'.$_SERVER['PHP_SELF'].'" method=\'post\'>
-																<th><input type="text" class="form-control" placeholder="0.00" name="amount"></th>
+																<th><input id="amount" type="text" class="form-control" placeholder="0.00" name="amount"></th>
 																<th><input type="text" class="form-control" placeholder="Description" name="description"></th>
-																<th><input type="text" class="form-control" placeholder="Username" name="payer_name"></th>
-																<th><input type="date" class="form-control" placeholder="None" name="due_date"></th>
-																<!--<th><input type="date" class="form-control" placeholder="'.$today[month]." ".$today[mday].",".$today[year].'" name="due_date"></th>-->
+																<th><select class="form-control" name="payer_name">';
+														
+																	foreach($roommates as $roommate)
+																	{
+																		echo '<option value="'.fetchUsername($roommate[roommate_id]).'">'.fetchUsername($roommate[roommate_id]).'</option>';
+																	}
+														
+														echo'	</select></th>
+																<th><input id="datepicker" type="text" class="form-control" name="due_date" placeholder="None"></th>
+																<!--<th><input id="datepicker" type="text" class="form-control" name="due_date" placeholder="'.$today[mon]."/".$today[mday]."/".$today[year].'"></th>-->
 																<th><button type=\'submit\' class=\'btn btn-primary\' name=\'Update\'>Add Cost</button></th>
 																<th></th>
-															</form>
-													    </tbody>
+															</form>';
+											}
+											echo	    '</tbody>
 													</table>
 												</div>
 											</div>
@@ -340,10 +396,11 @@ echo '
 							</div>
 						";
 					}
-					
+		if(isset($roommates))
+		{			
 			  echo "
 					<br><br>
-					<a href='http://www.apartment.duckdns.org/roommates.php' class='btn btn-primary' title='Manage roommates'>Manage roommates</a>
+					<a href='roommates.php' class='btn btn-primary' title='Manage roommates'>Manage Roommates</a>
 					</div>
 				</div>
 				<div class='row clearfix'>
@@ -351,5 +408,23 @@ echo '
 			</div>
 		</div>
 	</div>";
+	
+		}
+		else
+		{
+			  echo "
+					<br><br>
+					<p><i>You currently have no roommates.</i></p>
+					<br>
+					<a href='roommates.php' class='btn btn-primary' title='Manage roommates'>Manage Roommates</a>
+					</div>
+				</div>
+				<div class='row clearfix'>
+				</div>
+			</div>
+		</div>
+	</div>";
+	
+		}
 
 ?>
